@@ -52,28 +52,20 @@ local function SaveFunction(self, characterSpecific)
     if not self.Path then
         print(chat.header(addon.name) .. chat.error('No path is set.  Could not save settings.'));
     end
-    self:CreateDirectories(('%sconfig\\addons\\porter\\lists\\'):fmt(AshitaCore:GetInstallPath(), addon.name));
+    self:CreateDirectories(('%sconfig\\addons\\%s\\inputs\\'):fmt(AshitaCore:GetInstallPath(), addon.name));
+    self:CreateDirectories(('%sconfig\\addons\\%s\\outputs\\'):fmt(AshitaCore:GetInstallPath(), addon.name));
     local file = io.open(self.Path, 'w');
     file:write('--Automatically generated settings file for: ' .. addon.name .. '\n');
     file:write('local settings = {\n');
     if characterSpecific then
         file:write('    CharacterSpecific = ' .. tostring(self.CharacterSpecific) .. ',\n');
     end
-    file:write('    ExcludePack = {\n');
-    WriteItemArray(self.ExcludePack, file, 8);
-    file:write('    },\n');
-    file:write('    ExcludeUnpack = {\n');
-    WriteItemArray(self.ExcludeUnpack, file, 8);
-    file:write('    },\n');
-    file:write('    ForceDisableContainers = { ');
-    WriteNumericArray(self.ForceDisableContainers, file);
-    file:write(' },\n');
-    file:write('    ForceEnableContainers = { ');
-    WriteNumericArray(self.ForceEnableContainers, file);
-    file:write(' },\n');
-    file:write('    BlockInput = ' .. tostring(self.BlockInput) .. ',\n');
-    file:write('    RetryDelay = ' .. self.RetryDelay .. ',\n');
-    file:write('    MaxPackets = ' .. self.MaxPackets .. '\n');
+    file:write(string.format('    Scale=%f,\n', self.Scale));
+    file:write(string.format('    MobFormat=\'%s\',\n', self.MobFormat:gsub('\'', '\\\'')));
+    file:write(string.format('    PlayerFormat=\'%s\',\n', self.PlayerFormat:gsub('\'', '\\\'')));
+    file:write(string.format('    NPCFormat=\'%s\',\n', self.NPCFormat:gsub('\'', '\\\'')));
+    file:write(string.format('    PetFormat=\'%s\',\n', self.PetFormat:gsub('\'', '\\\'')));
+    file:write(string.format('    NothingFormat=\'%s\',\n', self.NothingFormat:gsub('\'', '\\\'')));
     file:write('};\n\n');
     file:write('return settings;');
     file:close();
@@ -81,13 +73,12 @@ end
 
 local defaultSettings = {
     CharacterSpecific = true,
-    ExcludePack = { },
-    ExcludeUnpack = {},
-    ForceDisableContainers = {}, 
-    ForceEnableContainers = {},
-    BlockInput = true,
-    RetryDelay = 6,
-    MaxPackets = 1
+    Scale = 1.2,
+    MobFormat = '$name$joblevel $aggro$LB$physmagic',
+    PlayerFormat = '$name$joblevel Id:$id $position1',
+    NPCFormat = '$name Index:$index Id:$id $position1',
+    PetFormat = '$name($owner) Id:$id $position1',
+    NothingFormat = ''
 };
 
 local settingsManager = require('settingsmanager'):New();

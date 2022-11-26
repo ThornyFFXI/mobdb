@@ -1,0 +1,115 @@
+require('common');
+
+local imgui = require('imgui');
+local ui = T{
+    IsOpen = T{ false },
+}
+
+local SettingsGui = {
+    IsOpen = { false },
+    SubWindows = {};
+    Theme = {
+        Header = { 1.0, 0.75, 0.55, 1.0 },
+        Command = { 0.0, 1.0, 0.2, 1.0 }
+    }
+};
+
+local TokenHelpData = {
+    { Token='$name', Explanation='The name of your current target.'},
+    { Token='$index', Explanation='The zone-specific index of your current target.'},
+    { Token='$id', Explanation='The game-specific id of your current target.'},
+    { Token='$zone', Explanation='Your current zone\'s name.'},
+    { Token='$job', Explanation='Your current target\'s job if available, ??? if not.'},
+    { Token='$level', Explanation='Your current target\'s level if available, ??? if not.'},
+    { Token='$joblevel', Explanation='Format [Lv33-37] [Lv33-37 WAR] [WAR35/SAM18] depending on available information.  Nothing if not available.'},
+    { Token='$position1', Explanation='Position in the format "(X, Y) Z:Z" with 2 decimal places.'},
+    { Token='$position2', Explanation='Position in the format "(X,Y) Z:Z" with no decimals.'},
+    { Token='$position3', Explanation='Position in the format "X:X Y:Y Z:Z" with 2 decimal places.'},
+    { Token='$position4', Explanation='Position in the format "X:X Y:Y Z:Z" with no decimals.'},
+    { Token='$strength', Explanation='Graphical display of weapons and elements the mob is strong against.'},
+    { Token='$weakness', Explanation='Graphical display of weapons and elements the mob is weak against.'},
+    { Token='$physical', Explanation='Graphical display of weapon types the mob is strong or weak against.'},
+    { Token='$magical', Explanation='Graphical display of elements the mob is strong or weak against'},
+    { Token='$physmagic', Explanation='Graphical display of elements and weapons the mob is strong or weak against.'},
+    { Token='$hpp', Explanation='The target\'s current HP percentage.'},
+    { Token='$aggro', Explanation='Graphical display indicating whether the target aggros, links, is a NM, and how it detects you.'},
+    { Token='$notes', Explanation='Any notes saved on the target in the database.  Multiple notes always take a new line.' }
+};
+
+function SettingsGui:Initialize(parent)
+    self.Parent = parent;
+    self.TokenEditor = {
+        IsOpen = { false },
+        Categories = { 'Mob', 'Player', 'NPC', 'Pet', 'Nothing' },
+        Strings = {};
+    };
+    self.TokenHelper = {
+        IsOpen = { false }
+    };
+    for _,category in pairs(self.TokenEditor.Categories) do
+        self.TokenEditor.Strings[category] = { self.Parent[category .. 'Format'] };
+    end
+end
+
+function SettingsGui:Render()
+    if (self.TokenEditor.IsOpen[1]) then
+        imgui.SetNextWindowSize({ 540, 235, });
+        if (imgui.Begin('MobDB Token Editor', self.TokenEditor.IsOpen, ImGuiWindowFlags_NoResize)) then
+            for _,category in ipairs(self.TokenEditor.Categories) do
+                imgui.TextColored(self.Theme.Header, string.format('%s Targeted', category));
+                imgui.PushItemWidth(-1);
+                if imgui.InputText('##Token_' .. category, self.TokenEditor.Strings[category], 1080) then
+                   self.Parent[category .. 'Format'] = self.TokenEditor.Strings[category][1];
+                   gBar:ParseFormats(category .. 'Format'); 
+                   self.Parent:Save(self.Parent.CharacterSpecific);
+                end
+                imgui.PopItemWidth();
+            end
+            if (imgui.Button('Help')) then
+                self.TokenHelper.IsOpen[1] = true;
+            end
+            imgui.End();
+        end
+
+        if (self.TokenHelper.IsOpen[1]) then
+            imgui.SetNextWindowSize({ 610, 597, });
+            if (imgui.Begin('MobDB Token Help', self.TokenEditor.IsOpen, ImGuiWindowFlags_NoResize)) then
+                for _,entry in pairs(TokenHelpData) do
+                    imgui.TextColored(self.Theme.Header, entry.Token);
+                    imgui.TextWrapped('  ' .. entry.Explanation);                    
+                end
+                imgui.End();
+            end
+            
+        end
+    else
+        self.TokenHelper.IsOpen[1] = false;
+        if (self.IsOpen[1]) then
+            imgui.SetNextWindowContentSize({ 223, 282 });
+            if (imgui.Begin(string.format('%s v%s', addon.name, addon.version), self.IsOpen, ImGuiWindowFlags_AlwaysAutoResize)) then
+                imgui.BeginGroup();
+                imgui.TextColored(self.Theme.Header, 'Save Mode');
+                if imgui.Checkbox('Character-Specific', { self.Parent.CharacterSpecific }) then
+                    self.Parent:ToggleCharacterSpecific();
+                    self.SubWindows = T{};
+                end
+                imgui.ShowHelp('Uses settings specific to this character, rather than defaults.', true);
+                imgui.TextColored(self.Theme.Header, 'Draw Scale');
+                local scale = { self.Parent.Scale };
+                if (imgui.SliderFloat('##Scale', scale, 0.5, 3.0, '%.1f', ImGuiSliderFlags_AlwaysClamp)) then
+                    if (scale[1] ~= self.Parent.Scale) then
+                        self.Parent.Scale = scale[1];
+                        self.Parent:Save(self.Parent.CharacterSpecific);
+                    end
+                end
+                if (imgui.Button('Edit Tokens')) then
+                    self.TokenEditor.IsOpen[1] = true;
+                end
+                imgui.EndGroup();
+                imgui.End();
+            end
+        end
+    end
+end
+
+return SettingsGui;

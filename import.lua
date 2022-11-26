@@ -335,7 +335,7 @@ end
 import.BuildDropTable = function(self)
     local startTime = os.clock();
     self.Drops = T{};
-    local raw = io.open(string.format('%saddons/mobdb/inputs/mob_droplist.sql', AshitaCore:GetInstallPath()));
+    local raw = io.open(string.format('%sconfig/addons/mobdb/inputs/mob_droplist.sql', AshitaCore:GetInstallPath()));
     local lines = raw:lines();
     for line in lines do
         local _,comment = string.find(line, '%-%-');
@@ -363,7 +363,7 @@ end
 import.BuildSpellTable = function(self)
     local startTime = os.clock();
     self.Spells = T{};
-    local raw = io.open(string.format('%saddons/mobdb/inputs/mob_spell_lists.sql', AshitaCore:GetInstallPath()));
+    local raw = io.open(string.format('%sconfig/addons/mobdb/inputs/mob_spell_lists.sql', AshitaCore:GetInstallPath()));
     local lines = raw:lines();
     for line in lines do
         local _,comment = string.find(line, '%-%-');
@@ -394,7 +394,7 @@ end
 import.BuildGroupTables = function(self)
     local startTime = os.clock();
     self.Groups = T{};
-    local raw = io.open(string.format('%saddons/mobdb/inputs/mob_groups.sql', AshitaCore:GetInstallPath()));
+    local raw = io.open(string.format('%sconfig/addons/mobdb/inputs/mob_groups.sql', AshitaCore:GetInstallPath()));
     local lines = raw:lines();
     local groupCount = 0;
     for line in lines do
@@ -436,7 +436,7 @@ end
 import.BuildPoolTable = function(self)
     local startTime = os.clock();
     self.Pools = T{};
-    local raw = io.open(string.format('%saddons/mobdb/inputs/mob_pools.sql', AshitaCore:GetInstallPath()));
+    local raw = io.open(string.format('%sconfig/addons/mobdb/inputs/mob_pools.sql', AshitaCore:GetInstallPath()));
     local lines = raw:lines();
     for line in lines do
         local _,comment = string.find(line, '%-%-');
@@ -474,7 +474,7 @@ end
 import.BuildFamilyTable = function(self)
     local startTime = os.clock();
     self.Families = T{};
-    local raw = io.open(string.format('%saddons/mobdb/inputs/mob_family_system.sql', AshitaCore:GetInstallPath()));
+    local raw = io.open(string.format('%sconfig/addons/mobdb/inputs/mob_family_system.sql', AshitaCore:GetInstallPath()));
     local lines = raw:lines();
     for line in lines do
         local _,comment = string.find(line, '%-%-');
@@ -505,7 +505,7 @@ end
 import.BuildResistanceTable = function(self)
     local startTime = os.clock();
     self.Resists = T{};
-    local raw = io.open(string.format('%saddons/mobdb/inputs/mob_resistances.sql', AshitaCore:GetInstallPath()));
+    local raw = io.open(string.format('%sconfig/addons/mobdb/inputs/mob_resistances.sql', AshitaCore:GetInstallPath()));
     local lines = raw:lines();
     for line in lines do
         local _,comment = string.find(line, '%-%-');
@@ -525,7 +525,7 @@ import.BuildResistanceTable = function(self)
                 FamilyId = tonumber(split[1]),
                 Slashing = tonumber(split[3]),
                 Piercing = tonumber(split[4]),
-                HandToHand = tonumber(split[5]),
+                H2H = tonumber(split[5]),
                 Impact = tonumber(split[6]),
                 Fire = 1 + (tonumber(split[7]) * -0.0001),
                 Ice = 1 + (tonumber(split[8]) * -0.0001),
@@ -547,7 +547,7 @@ end
 import.BuildMonsterTables = function(self)
     local startTime = os.clock();
     self.Monsters = T{};
-    local raw = io.open(string.format('%saddons/mobdb/inputs/mob_spawn_points.sql', AshitaCore:GetInstallPath()));
+    local raw = io.open(string.format('%sconfig/addons/mobdb/inputs/mob_spawn_points.sql', AshitaCore:GetInstallPath()));
     local lines = raw:lines();
     local monsterCount = 0;
     for line in lines do
@@ -596,7 +596,7 @@ end
 
 import.CheckFiles = function(self)
     for index = 1,300 do
-        local path = string.format('%saddons/mobdb/test/%u.lua', AshitaCore:GetInstallPath(), index);
+        local path = string.format('%sconfig/addons/mobdb/test/%u.lua', AshitaCore:GetInstallPath(), index);
         if ashita.fs.exists(path) then
             local output = self:LoadTable(path);
             if type(output) == 'table' then
@@ -613,10 +613,10 @@ import.GenerateData = function(self)
     local totalGroup = 0;
     local totalPool = 0;
     local totalFamily = 0;
-    local errors = io.open(string.format('%saddons/mobdb/output/errors.txt', AshitaCore:GetInstallPath()), 'w');
+    local errors = io.open(string.format('%sconfig/addons/mobdb/output/errors.txt', AshitaCore:GetInstallPath()), 'w');
     for zoneId,mobs in pairs(self.Monsters) do
         local groups = self.Groups[zoneId];        
-        local outFile = io.open(string.format('%saddons/mobdb/output/%u.lua', AshitaCore:GetInstallPath(), zoneId), 'w');
+        local outFile = io.open(string.format('%sconfig/addons/mobdb/output/%u.lua', AshitaCore:GetInstallPath(), zoneId), 'w');
         local zoneDat = LoadEntityDat(zoneId);
         local groupFailCount = 0;
         local poolFailCount = 0;
@@ -696,8 +696,8 @@ import.GenerateData = function(self)
                                         end
                                     end
 
-                                    outFile:write(string.format('    [%d] = { Name=\'%s\', Notorious=%s, Aggro=%s, Link=%s, TrueSight=%s, Job=%d, Detection={ Sight=%s, Sound=%s, Blood=%s, Magic=%s, JA=%s, Scent=%s }, Drops={',
-                                    mobIndex, string.gsub(data.Name, '\'', '\\\''), isNotorious, isAggro, isLinking, isTrueSight, job, isSight, isSound, isBlood, isMagic,  isJA, isScent));
+                                    outFile:write(string.format('    [%d] = { Name=\'%s\', Notorious=%s, Aggro=%s, Link=%s, TrueSight=%s, Job=%d, MinLevel=%d, MaxLevel=%d, Respawn=%d, Sight=%s, Sound=%s, Blood=%s, Magic=%s, JA=%s, Scent=%s, Drops={',
+                                    mobIndex, string.gsub(data.Name, '\'', '\\\''), isNotorious, isAggro, isLinking, isTrueSight, job, group.MinLevel, group.MaxLevel, group.RespawnTime, isSight, isSound, isBlood, isMagic,  isJA, isScent));
                                     local first = true;
                                     for _,itemId in ipairs(drops) do
                                         if not first then outFile:write(','); end
@@ -714,7 +714,7 @@ import.GenerateData = function(self)
                                     end
 
                                     outFile:write('}, Modifiers={');                                    
-                                    local modifiers = { 'Slashing', 'Piercing', 'HandToHand', 'Impact', 'Fire', 'Ice', 'Wind', 'Earth', 'Lightning', 'Water', 'Light', 'Dark' };
+                                    local modifiers = { 'Slashing', 'Piercing', 'H2H', 'Impact', 'Fire', 'Ice', 'Wind', 'Earth', 'Lightning', 'Water', 'Light', 'Dark' };
                                     local first = true;
                                     for _,mod in ipairs(modifiers) do
                                         if not first then

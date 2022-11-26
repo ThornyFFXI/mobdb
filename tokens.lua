@@ -4,114 +4,386 @@ local partyMgr = memMgr:GetParty();
 local playMgr = memMgr:GetPlayer();
 local resMgr = AshitaCore:GetResourceManager();
 
+local function PrintMods(mods)
+    for index,mod in ipairs(mods) do
+        if (gTextures.Cache[mod.Type] ~= nil) then
+            imgui.Image(tonumber(ffi.cast("uint32_t", gTextures.Cache[mod.Type])), {13 * gSettings.Scale, 13 * gSettings.Scale });
+            imgui.SameLine();
+        end
+
+        if (index == #mods) or (mods[index+1].Potency ~= mod.Potency) then
+            local outstring = '';
+            if (mod.Potency > 1) then
+                outstring = outstring .. '+' .. string.format('%.2f', ((mod.Potency - 1) * 100)):gsub('0+$', ''):gsub('%.$', '') .. '%%';
+            else
+                outstring = outstring .. '-' .. string.format('%.2f', ((1 - mod.Potency) * 100)):gsub('0+$', ''):gsub('%.$', '') .. '%%';
+            end
+
+            local lastLine = (index == #mods);
+            if not lastLine then
+                outstring = outstring .. ' ';
+            end
+            imgui.Text(outstring);
+            if not lastLine then
+                imgui.SameLine();
+            end
+        end
+    end
+end
+
+local function PrintFlags(resource)
+    if (resource.Notorious) then
+        if (resource.Aggro) then
+            imgui.Image(tonumber(ffi.cast("uint32_t", gTextures.Cache['AggroHQ'])), {13 * gSettings.Scale, 13 * gSettings.Scale });
+        else
+            imgui.Image(tonumber(ffi.cast("uint32_t", gTextures.Cache['PassiveHQ'])), {13 * gSettings.Scale, 13 * gSettings.Scale });
+        end
+    else
+        if (resource.Aggro) then
+            imgui.Image(tonumber(ffi.cast("uint32_t", gTextures.Cache['AggroNQ'])), {13 * gSettings.Scale, 13 * gSettings.Scale });
+        else
+            imgui.Image(tonumber(ffi.cast("uint32_t", gTextures.Cache['PassiveNQ'])), {13 * gSettings.Scale, 13 * gSettings.Scale });
+        end
+    end
+
+    local flags = {
+        'Link',
+        'TrueSight',
+        'Sight',
+        'Sound',
+        'Scent',
+        'Magic',
+        'JA',
+        'Blood',
+    };
+
+    for _,flag in ipairs(flags) do
+        if (resource[flag] == true) and (gTextures.Cache[flag] ~= nil) then
+            imgui.SameLine();
+            imgui.Image(tonumber(ffi.cast("uint32_t", gTextures.Cache[flag])), {13 * gSettings.Scale, 13 * gSettings.Scale });            
+        end
+    end
+end
+
 return {
     ['$name'] = function(mob)
-        local resource = gData.Mobs[mob.Index];
+        local resource = gData.Mobs[mob];
         if resource and resource.Name then
-            return resource.Name;
+            imgui.Text(resource.Name);
         else
-            return entMgr:GetName(mob.Index);
+            imgui.Text(entMgr:GetName(mob));
         end
+        return true;
     end,
     ['$index'] = function(mob)
-        return tostring(mob.Index);
+        imgui.Text(tostring(mob));
+        return true;
     end,
     ['$id'] = function(mob)
-        return entMgr:GetServerId(mob.Index);
+        imgui.Text(tostring(entMgr:GetServerId(mob)));
+        return true;
     end,
     ['$zone'] = function(mob)
         local zoneId = partyMgr:GetMemberZone(0);
         local string = resMgr:GetString('zones.names', zoneId);
         if string then
-            return string;
+            imgui.Text(string);
         else
-            return 'Unknown';
+            imgui.Text('Unknown');
         end
+        return true;
     end,
-    ['$job'] = function(mob)
-        if (mob.Type == 'self') then
-            local mainJob = playMgr:GetMainJob();
-            local subJob = playMgr:GetSubJob();
-            return string.format('%s/%s', resMgr:GetString('jobs.names_abbr', mainJob), resMgr:GetString('jobs.names_abbr', subJob));
-        elseif (mob.Type == 'party') then
-            for i = 1,17 do
-                if partyMgr:GetMemberZone(i) == partyMgr:GetMemberZone(0) then
-                    if partyMgr:GetMemberTargetIndex(i) == mob.Index then
-                        local mainJob = partyMgr:GetMemberMainJob(i);
-                        local subJob = partyMgr:GetMemberSubJob(i);
-                        if ((mainJob ~= 0) or (subJob ~= 0)) then
-                            return string.format('%s/%s', resMgr:GetString('jobs.names_abbr', mainJob), resMgr:GetString('jobs.names_abbr', subJob));
+    ['$job'] = function(mob)        
+        local resource = gData.Mobs[mob];
+        if resource and resource.Job > 0 then
+            local output = resMgr:GetString('jobs.names_abbr', resource.Job);
+            if (resource.SubJob ~= nil) and (resource.SubJob > 0) then
+                output = output .. '/' .. resMgr:GetString('jobs.names_abbr', resource.SubJob);                    
+            end
+            imgui.Text(output);
+        elseif mob <= 0x3FF then
+            imgui.Text('???');
+        else
+            if (mob == AshitaCore:GetMemoryManager():GetParty():GetMemberTargetIndex(0)) then
+                local mainJob = playMgr:GetMainJob();
+                local subJob = playMgr:GetSubJob();
+                imgui.Text(string.format('%s/%s', resMgr:GetString('jobs.names_abbr', mainJob), resMgr:GetString('jobs.names_abbr', subJob)));
+            else
+                for i = 1,17 do
+                    if partyMgr:GetMemberZone(i) == partyMgr:GetMemberZone(0) then
+                        if partyMgr:GetMemberTargetIndex(i) == mob then
+                            local mainJob = partyMgr:GetMemberMainJob(i);
+                            local subJob = partyMgr:GetMemberSubJob(i);
+                            if ((mainJob ~= 0) or (subJob ~= 0)) then
+                                imgui.Text(string.format('%s/%s', resMgr:GetString('jobs.names_abbr', mainJob), resMgr:GetString('jobs.names_abbr', subJob)));
+                            end
+                            break;
                         end
-                        break;
                     end
                 end
-            end
-            return '???/???';
-        elseif (mob.Type == 'npc') then
-            return 'N/A';
-        elseif (mob.Type == 'enemy') then
-            local resource = gData.Mobs[mob.Index];
-            if resource and resource.Job then
-                return resource.Job;
-            else
-                return '???/???';
+                imgui.Text('???');
             end
         end
+        return true;
     end,
     ['$level'] = function(mob)
-        if (mob.Type == 'self') then
-            return tostring(playMgr:GetMainJobLevel());
-        elseif (mob.Type == 'party') then
-            for i = 1,17 do
-                if partyMgr:GetMemberZone(i) == partyMgr:GetMemberZone(0) then
-                    if partyMgr:GetMemberTargetIndex(i) == mob.Index then
-                        local level = partyMgr:GetMemberMainJobLevel(i);
-                        if (level > 0) then
-                            return tostring(level);
+        local resource = gData.Mobs[mob];
+        if resource then
+            if resource.Level then
+                imgui.Text(tostring(resource.Level));
+            else
+                imgui.Text(string.format('%d-%d', resource.MinLevel, resource.MaxLevel));
+            end
+        elseif mob <= 0x3FF then
+            imgui.Text('???');
+        else
+            if (mob == AshitaCore:GetMemoryManager():GetParty():GetMemberTargetIndex(0)) then
+                imgui.Text(tostring(playMgr:GetMainJobLevel()));
+            else
+                for i = 1,17 do
+                    if partyMgr:GetMemberZone(i) == partyMgr:GetMemberZone(0) then
+                        if partyMgr:GetMemberTargetIndex(i) == mob then
+                            local level = partyMgr:GetMemberMainJobLevel(i);
+                            if (level > 0) then
+                                imgui.Text(tostring(level));
+                                return;
+                            end
                         end
-                        break;
+                    end
+                end
+                imgui.Text('???');
+            end
+        end
+        return true;
+    end,
+    ['$joblevel'] = function(mob)
+        local resource = gData.Mobs[mob];
+        if resource then
+            local output = string.format('[Lv%d-%d', resource.MinLevel, resource.MaxLevel);
+            if (resource.Job > 0) then
+                output = output .. ' ' .. resMgr:GetString('jobs.names_abbr', resource.Job);
+                if (resource.SubJob ~= nil) and (resource.SubJob > 0) then
+                    output = output .. '/' .. resMgr:GetString('jobs.names_abbr', resource.SubJob);                    
+                end
+            end
+            output = output .. ']';
+            imgui.Text(output);
+            return true;
+        elseif mob <= 0x3FF then
+            return false;
+        else
+            if (mob == AshitaCore:GetMemoryManager():GetParty():GetMemberTargetIndex(0)) then
+                local output = string.format('[%s%u/%s%u]',
+                    resMgr:GetString('jobs.names_abbr', playMgr:GetMainJob()),
+                    playMgr:GetMainJobLevel(),
+                    resMgr:GetString('jobs.names_abbr', playMgr:GetSubJob()),
+                    playMgr:GetSubJobLevel());
+                imgui.Text(output);
+                return true;
+            else
+                for i = 1,17 do
+                    if partyMgr:GetMemberZone(i) == partyMgr:GetMemberZone(0) then
+                        if partyMgr:GetMemberTargetIndex(i) == mob then
+                            local level = partyMgr:GetMemberMainJobLevel(i);
+                            if (level > 0) then
+                                local output = string.format('[%s%u/%s%u]',
+                                    resMgr:GetString('jobs.names_abbr', partyMgr:GetMemberMainJob(i)),
+                                    partyMgr:GetMemberMainJobLevel(i),
+                                    resMgr:GetString('jobs.names_abbr', partyMgr:GetMemberSubJob(i)),
+                                    partyMgr:GetMemberSubJobLevel(i));
+                                imgui.Text(output);
+                                return true;
+                            end
+                        end
                     end
                 end
             end
-            return '???';
-        elseif (mob.Type == 'npc') then
-            return 'N/A';
-        elseif (mob.Type == 'enemy') then
-            local resource = gData.Mobs[mob.Index];
-            if resource and resource.Level then
-                return tostring(resource.Level);
-            elseif resource and resource.MinLevel and resource.MaxLevel then
-                return string.format('%d-%d', resource.MinLevel, resource.MaxLevel);
+        end
+        return false;
+    end,
+    ['$position1'] = function(mob)
+        imgui.Text(string.format('(%.2f,%.2f) Z:%.2f',
+            entMgr:GetLocalPositionX(mob),
+            entMgr:GetLocalPositionY(mob),
+            entMgr:GetLocalPositionZ(mob)));
+        return true;
+    end,
+    ['$position2'] = function(mob)
+        imgui.Text(string.format('(%.0f,%.0f) Z:%.0f',
+            entMgr:GetLocalPositionX(mob),
+            entMgr:GetLocalPositionY(mob),
+            entMgr:GetLocalPositionZ(mob)));
+        return true;
+    end,
+    ['$position3'] = function(mob)
+        imgui.Text(string.format('X:%.2f Y:%.2f Z:%.2f',
+            entMgr:GetLocalPositionX(mob),
+            entMgr:GetLocalPositionY(mob),
+            entMgr:GetLocalPositionZ(mob)));
+        return true;
+    end,
+    ['$position4'] = function(mob)
+        imgui.Text(string.format('X:%.0f Y:%.0f Z:%.0f',
+            entMgr:GetLocalPositionX(mob),
+            entMgr:GetLocalPositionY(mob),
+            entMgr:GetLocalPositionZ(mob)));
+        return true;
+    end,
+    ['$strength'] = function(mob)
+        local resource = gData.Mobs[mob];
+        if resource then
+            local mods = T{};
+            for name,potency in pairs(resource.Modifiers) do
+                if (potency < 1.0) then
+                    mods:append({ Type=name, Potency=potency });
+                end
+                table.sort(mods, function(a,b)
+                    return (a.Potency < b.Potency);
+                end);
+            end
+            if (#mods > 0) then
+                PrintMods(mods);
+                return true;
             else
-                return '???';
+                return false;
             end
         end
+        return false;
     end,
-    ['$position'] = function(mob)
-        return string.format('(%.2f,%.2f) Z:%.2f',
-            entMgr:GetLocalX(mob.Index),
-            entMgr:GetLocalY(mob.Index),
-            entMgr:GetLocalZ(mob.Index));
+    ['$weakness'] = function(mob)
+        local resource = gData.Mobs[mob];
+        if resource then
+            local mods = T{};
+            for name,potency in pairs(resource.Modifiers) do
+                if (potency > 1.0) then
+                    mods:append({ Type=name, Potency=potency });
+                end
+                table.sort(mods, function(a,b)
+                    return (a.Potency > b.Potency);
+                end);
+            end
+            if (#mods > 0) then
+                PrintMods(mods);
+                return true;
+            else
+                return false;
+            end
+        end
+        return false;
     end,
-    ['$elements'] = function(mob)
+    ['$physical'] = function(mob)
+        local resource = gData.Mobs[mob];
+        if resource then
+            local mods = T{};
+            for name,potency in pairs(resource.Modifiers) do
+                if (potency ~= 1.0) and T{'H2H', 'Impact', 'Piercing', 'Slashing'}:contains(name) then
+                    mods:append({ Type=name, Potency=potency });
+                end
+                table.sort(mods, function(a,b)
+                    return (a.Potency > b.Potency);
+                end);
+            end
+            if (#mods > 0) then
+                PrintMods(mods);
+                return true;
+            else
+                return false;
+            end
+        end
+        return false;
+    end,
+    ['$magical'] = function(mob)
+        local resource = gData.Mobs[mob];
+        if resource then
+            local mods = T{};
+            for name,potency in pairs(resource.Modifiers) do
+                if (potency ~= 1.0) and (not T{'H2H', 'Impact', 'Piercing', 'Slashing'}:contains(name)) then
+                    mods:append({ Type=name, Potency=potency });
+                end
+                table.sort(mods, function(a,b)
+                    return (a.Potency > b.Potency);
+                end);
+            end
+            if (#mods > 0) then
+                PrintMods(mods);
+                return true;
+            else
+                return false;
+            end
+        end
+        return false;
+    end,
+    ['$physmagic'] = function(mob)
+        local resource = gData.Mobs[mob];
+        local retvalue =  false;
+        if resource then
+            local mods = T{};
+            for name,potency in pairs(resource.Modifiers) do
+                if (potency ~= 1.0) and T{'H2H', 'Impact', 'Piercing', 'Slashing'}:contains(name) then
+                    mods:append({ Type=name, Potency=potency });
+                end
+                table.sort(mods, function(a,b)
+                    return (a.Potency > b.Potency);
+                end);
+            end
+            
+            if (#mods > 0) then
+                PrintMods(mods);
+                retvalue = true;
+            end
 
-    end,
-    ['$hp'] = function(mob)
-
+            mods = T{};
+            for name,potency in pairs(resource.Modifiers) do
+                if (potency ~= 1.0) and (not T{'H2H', 'Impact', 'Piercing', 'Slashing'}:contains(name)) then
+                    mods:append({ Type=name, Potency=potency });
+                end
+                table.sort(mods, function(a,b)
+                    return (a.Potency > b.Potency);
+                end);
+            end
+            if (#mods > 0) then
+                if (retvalue) then
+                    imgui.SameLine();
+                    imgui.Text(' ');
+                    imgui.SameLine();
+                end
+                PrintMods(mods);
+                return true;
+            else
+                return retvalue;
+            end
+        end
+        return false;
     end,
     ['$hpp'] = function(mob)
-
+        imgui.Text(tostring(entMgr:GetHPPercent(mob)));
+        return true;
     end,
     ['$aggro'] = function(mob)
-
+        local resource = gData.Mobs[mob];
+        if resource then
+            PrintFlags(resource);
+            return true;
+        else
+            return false;
+        end
     end,
     ['$spawncount'] = function(mob)
-
+        
     end,
     ['$speed'] = function(mob)
 
     end,
     ['$notes'] = function(mob)
-
+        local resource = gData.Mobs[mob];
+        if resource then
+            if (resource.Notes) and (#resource.Notes > 0) then
+                for _,note in ipairs(resource.Notes) do
+                    imgui.Text(note);
+                end
+                return true;
+            end
+        end
+        return false;
     end
 };
