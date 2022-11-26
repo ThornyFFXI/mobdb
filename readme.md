@@ -20,5 +20,5 @@ This process is only intended for advanced users, and will allow you to generate
 - mob_resistances.sql
 - mob_spawn_points.sql
 - mob_spell_lists.sql
-3. Type the command ingame.  This will freeze your instance for a considerable period while it generates files.<br>
+3. Type the command "/mobdb import" ingame.  This will freeze your instance for a considerable period while it generates files.<br>
 4. Copy the files generated from Ashita/addons/config/mobdb/outputs to Ashita/addons/mobdb/data.
