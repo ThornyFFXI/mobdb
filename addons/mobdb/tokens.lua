@@ -8,6 +8,70 @@ local function Image(fileName)
     imgui.Image(tonumber(ffi.cast("uint32_t", gTextures.Cache[fileName])), {13 * gSettings.Scale, 13 * gSettings.Scale }, { 0, 0 }, { 1, 1 }, { 1, 1, 1, 1 }, { 0, 0, 0, 0 });
 end
 
+local function PrintAllImmunities()
+    local flags = {
+        { flag=0x01, icon='ImmuneSleep' },
+        { flag=0x02, icon='ImmuneGravity' },
+        { flag=0x04, icon='ImmuneBind' },
+        { flag=0x08, icon='ImmuneStun' },
+        { flag=0x10, icon='ImmuneSilence' },
+        { flag=0x20, icon='ImmuneParalyze' },
+        { flag=0x40, icon='ImmuneBlind' },
+        { flag=0x80, icon='ImmuneSlow' },
+        { flag=0x100, icon='ImmunePoison' },
+        { flag=0x200, icon='ImmuneElegy' },
+        { flag=0x400, icon='ImmuneRequiem' },
+        { flag=0x800, icon='ImmuneLightSleep' },
+        { flag=0x1000, icon='ImmuneDarkSleep' },
+    }
+
+    local first = true;
+    for _,flag in ipairs(flags) do
+        if (gTextures.Cache[flag.icon] ~= nil) then
+            if not first then
+                imgui.SameLine();
+            end
+            Image(flag.icon);
+            first = false;
+        end
+    end
+
+    return (first == false);
+end
+
+local function PrintImmunities(resource)
+    local flags = {
+        { flag=0x01, icon='ImmuneSleep' },
+        { flag=0x02, icon='ImmuneGravity' },
+        { flag=0x04, icon='ImmuneBind' },
+        { flag=0x08, icon='ImmuneStun' },
+        { flag=0x10, icon='ImmuneSilence' },
+        { flag=0x20, icon='ImmuneParalyze' },
+        { flag=0x40, icon='ImmuneBlind' },
+        { flag=0x80, icon='ImmuneSlow' },
+        { flag=0x100, icon='ImmunePoison' },
+        { flag=0x200, icon='ImmuneElegy' },
+        { flag=0x400, icon='ImmuneRequiem' },
+        { flag=0x800, icon='ImmuneLightSleep' },
+        { flag=0x1000, icon='ImmuneDarkSleep' },
+    }
+
+    local first = true;
+    for _,flag in ipairs(flags) do
+        if (bit.band(resource.Immunities, flag.flag) ~= 0) then
+            if (gTextures.Cache[flag.icon] ~= nil) then
+                if not first then
+                    imgui.SameLine();
+                end
+                Image(flag.icon);
+                first = false;
+            end
+        end
+    end
+
+    return (first == false);
+end
+
 local function PrintMods(mods)
     for index,mod in ipairs(mods) do
         if (gTextures.Cache[mod.Type] ~= nil) then
@@ -428,6 +492,17 @@ return {
     end,
     ['$spawncount'] = function(mob)
         
+    end,
+    ['$immunity'] = function(mob)
+        local resource = gData.Mobs[mob];
+        if resource then
+            return PrintImmunities(resource);
+        else
+            return false;
+        end
+    end,
+    ['$debugimmunity'] = function(mob)
+        return PrintAllImmunities();
     end,
     ['$speed'] = function(mob)
 

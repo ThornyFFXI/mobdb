@@ -31,8 +31,11 @@ local TokenHelpData = {
     { Token='$physical', Explanation='Graphical display of weapon types the mob is strong or weak against.'},
     { Token='$magical', Explanation='Graphical display of elements the mob is strong or weak against'},
     { Token='$physmagic', Explanation='Graphical display of elements and weapons the mob is strong or weak against.'},
+    { Token='$immunity', Explanation='Graphical display of debuffs that a monster is immune to.' },
     { Token='$hpp', Explanation='The target\'s current HP percentage.'},
     { Token='$aggro', Explanation='Graphical display indicating whether the target aggros, links, is a NM, and how it detects you.'},
+    { Token='$debugflags', Explanation='Show all flags for debug purposes.' },
+    { Token='$debugimmunity', Explanation='Show all immunity icons for debug purposes.' },
     { Token='$notes', Explanation='Any notes saved on the target in the database.  Multiple notes always take a new line.' }
 };
 
@@ -93,7 +96,6 @@ function SettingsGui:Render()
                     self.Parent:ToggleCharacterSpecific();
                     self.SubWindows = T{};
                 end
-                imgui.ShowHelp('Uses settings specific to this character, rather than defaults.', true);
                 imgui.TextColored(self.Theme.Header, 'Draw Scale');
                 local scale = { self.Parent.Scale };
                 if (imgui.SliderFloat('##Scale', scale, 0.5, 3.0, '%.2f', ImGuiSliderFlags_AlwaysClamp)) then

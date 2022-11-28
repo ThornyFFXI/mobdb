@@ -37,9 +37,9 @@ ashita.events.register('command', 'command_cb', function (e)
 
     if (#args > 1) then
         if (args[2] == 'import') then
-            if (#args > 2) and (string.lower(args[3]) == 'wings') then
+            if (#args > 2) and (string.lower(args[3]) == 'lsb') then
                 local import = require('import');
-                import:BuildTables(true);
+                import:BuildTables(false);
                 import:GenerateData();
             elseif (#args > 2) and (string.lower(args[3]) == 'wings') then
                 local import = require('import');

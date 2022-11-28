@@ -470,6 +470,7 @@ import.BuildPoolTable = function(self)
                 TrueSight = (split[13] == '1'),
                 Linking = (split[14] == '1'),
                 MobType = tonumber(split[15]),
+                Immunities = tonumber(split[16]),
                 SpellGroup = tonumber(split[22]),
                 ResistGroup = tonumber(split[26])
             };
@@ -506,7 +507,7 @@ import.BuildFamilyTable = function(self, wings)
                 local family = {
                     FamilyId = tonumber(split[1]),
                     DetectJob = (humanoid_families_wings:contains(tonumber(split[1])) or humanoid_superfamilies_wings:contains(tonumber(split[3]))),
-                    Detection = tonumber(split[34])
+                    Detection = tonumber(split[33])
                 };
                 self.Families[family.FamilyId] = family;
 
@@ -780,8 +781,8 @@ import.ProcessMob = function(self, zoneId, mobIndex)
         end
     end
 
-    self.OutputFile:write(string.format('    [%d] = { Name=\'%s\', Notorious=%s, Aggro=%s, Link=%s, TrueSight=%s, Job=%d, MinLevel=%d, MaxLevel=%d, Respawn=%d, Sight=%s, Sound=%s, Blood=%s, Magic=%s, JA=%s, Scent=%s, Drops={',
-    mobIndex, string.gsub(data.Name, '\'', '\\\''), isNotorious, isAggro, isLinking, isTrueSight, job, group.MinLevel, group.MaxLevel, group.RespawnTime, isSight, isSound, isBlood, isMagic,  isJA, isScent));
+    self.OutputFile:write(string.format('    [%d] = { Name=\'%s\', Notorious=%s, Aggro=%s, Link=%s, TrueSight=%s, Job=%d, MinLevel=%d, MaxLevel=%d, Immunities=%d, Respawn=%d, Sight=%s, Sound=%s, Blood=%s, Magic=%s, JA=%s, Scent=%s, Drops={',
+    mobIndex, string.gsub(data.Name, '\'', '\\\''), isNotorious, isAggro, isLinking, isTrueSight, job, group.MinLevel, group.MaxLevel, pool.Immunities, group.RespawnTime, isSight, isSound, isBlood, isMagic,  isJA, isScent));
     local first = true;
     for _,itemId in ipairs(drops) do
         if not first then self.OutputFile:write(','); end
