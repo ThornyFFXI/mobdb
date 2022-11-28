@@ -94,7 +94,10 @@ bar.Render = function(self)
 
     if (self.State.IsOpen[1]) and (#renderTable > 0) then
         imgui.PushStyleVar(ImGuiStyleVar_ItemSpacing, { self.Layout.ItemSpacing, self.Layout.ItemSpacing });
-        imgui.SetNextWindowBgAlpha(0.80);
+        if gSettings.Color then
+            imgui.PushStyleColor(ImGuiCol_WindowBg, gSettings.Color);
+        end
+        imgui.SetNextWindowBgAlpha(gSettings.Alpha);
         if imgui.Begin('mobdb_infobar', self.State.IsOpen, bit.bor(ImGuiWindowFlags_NoDecoration, ImGuiWindowFlags_AlwaysAutoResize)) then
             imgui.SetWindowFontScale(gSettings.Scale);
             local renderIndex = 1;
@@ -119,6 +122,9 @@ bar.Render = function(self)
                 renderIndex = renderIndex + 1;
             end
             imgui.End();
+        end
+        if (gSettings.Color) then
+            imgui.PopStyleColor();
         end
     end
 end

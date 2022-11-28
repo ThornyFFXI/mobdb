@@ -335,7 +335,7 @@ end
 import.BuildDropTable = function(self)
     local startTime = os.clock();
     self.Drops = T{};
-    local raw = io.open(string.format('%sconfig/addons/mobdb/inputs/mob_droplist.sql', AshitaCore:GetInstallPath()));
+    local raw = io.open(string.format('%sconfig/addons/mobdb/input/mob_droplist.sql', AshitaCore:GetInstallPath()));
     local lines = raw:lines();
     for line in lines do
         local _,comment = string.find(line, '%-%-');
@@ -363,7 +363,7 @@ end
 import.BuildSpellTable = function(self)
     local startTime = os.clock();
     self.Spells = T{};
-    local raw = io.open(string.format('%sconfig/addons/mobdb/inputs/mob_spell_lists.sql', AshitaCore:GetInstallPath()));
+    local raw = io.open(string.format('%sconfig/addons/mobdb/input/mob_spell_lists.sql', AshitaCore:GetInstallPath()));
     local lines = raw:lines();
     for line in lines do
         local _,comment = string.find(line, '%-%-');
@@ -394,7 +394,7 @@ end
 import.BuildGroupTables = function(self)
     local startTime = os.clock();
     self.Groups = T{};
-    local raw = io.open(string.format('%sconfig/addons/mobdb/inputs/mob_groups.sql', AshitaCore:GetInstallPath()));
+    local raw = io.open(string.format('%sconfig/addons/mobdb/input/mob_groups.sql', AshitaCore:GetInstallPath()));
     local lines = raw:lines();
     local groupCount = 0;
     for line in lines do
@@ -436,7 +436,7 @@ end
 import.BuildPoolTable = function(self)
     local startTime = os.clock();
     self.Pools = T{};
-    local raw = io.open(string.format('%sconfig/addons/mobdb/inputs/mob_pools.sql', AshitaCore:GetInstallPath()));
+    local raw = io.open(string.format('%sconfig/addons/mobdb/input/mob_pools.sql', AshitaCore:GetInstallPath()));
     local lines = raw:lines();
     for line in lines do
         local _,comment = string.find(line, '%-%-');
@@ -456,6 +456,7 @@ import.BuildPoolTable = function(self)
                 PoolId = tonumber(split[1]),
                 FamilyId = tonumber(split[4]),
                 MainJob = tonumber(split[6]),
+                SubJob = tonumber(split[7]),
                 Aggressive = (split[12] == '1'),
                 TrueSight = (split[13] == '1'),
                 Linking = (split[14] == '1'),
@@ -471,10 +472,11 @@ import.BuildPoolTable = function(self)
     print(chat.header('MobDB') .. chat.message(string.format('Built pool table in %.2fs.  Total Entries:%u', os.clock() - startTime, #self.Pools)));
 end
 
-import.BuildFamilyTable = function(self)
+import.BuildFamilyTable = function(self, wings)
     local startTime = os.clock();
     self.Families = T{};
-    local raw = io.open(string.format('%sconfig/addons/mobdb/inputs/mob_family_system.sql', AshitaCore:GetInstallPath()));
+    if (wings == true) then self.Resists = T{}; end
+    local raw = io.open(string.format('%sconfig/addons/mobdb/input/mob_family_system.sql', AshitaCore:GetInstallPath()));
     local lines = raw:lines();
     for line in lines do
         local _,comment = string.find(line, '%-%-');
@@ -490,12 +492,40 @@ import.BuildFamilyTable = function(self)
                 split[#split + 1] = i;
             end
 
-            local family = {
-                FamilyId = tonumber(split[1]),
-                SuperFamilyId = tonumber(split[3]),
-                Detection = tonumber(split[23])
-            };
-            self.Families[family.FamilyId] = family;
+
+            if wings == true then
+                local family = {
+                    FamilyId = tonumber(split[1]),
+                    SuperFamilyId = tonumber(split[3]),
+                    Detection = tonumber(split[34])
+                };
+                self.Families[family.FamilyId] = family;
+
+                local resist = {
+                    FamilyId = tonumber(split[1]),
+                    Slashing = tonumber(split[20]),
+                    Piercing = tonumber(split[21]),
+                    H2H = tonumber(split[22]),
+                    Impact = tonumber(split[23]),
+                    Fire = tonumber(split[24]),
+                    Ice = tonumber(split[25]),
+                    Wind = tonumber(split[26]),
+                    Earth = tonumber(split[27]),
+                    Lightning = tonumber(split[28]),
+                    Water = tonumber(split[29]),
+                    Light = tonumber(split[30]),
+                    Dark = tonumber(split[31])
+                };
+                
+                self.Resists[resist.FamilyId] = resist;
+            else
+                local family = {
+                    FamilyId = tonumber(split[1]),
+                    SuperFamilyId = tonumber(split[3]),
+                    Detection = tonumber(split[23])
+                };
+                self.Families[family.FamilyId] = family;
+            end
         end
     end
     raw:close();
@@ -505,7 +535,7 @@ end
 import.BuildResistanceTable = function(self)
     local startTime = os.clock();
     self.Resists = T{};
-    local raw = io.open(string.format('%sconfig/addons/mobdb/inputs/mob_resistances.sql', AshitaCore:GetInstallPath()));
+    local raw = io.open(string.format('%sconfig/addons/mobdb/input/mob_resistances.sql', AshitaCore:GetInstallPath()));
     local lines = raw:lines();
     for line in lines do
         local _,comment = string.find(line, '%-%-');
@@ -547,7 +577,7 @@ end
 import.BuildMonsterTables = function(self)
     local startTime = os.clock();
     self.Monsters = T{};
-    local raw = io.open(string.format('%sconfig/addons/mobdb/inputs/mob_spawn_points.sql', AshitaCore:GetInstallPath()));
+    local raw = io.open(string.format('%sconfig/addons/mobdb/input/mob_spawn_points.sql', AshitaCore:GetInstallPath()));
     local lines = raw:lines();
     local monsterCount = 0;
     for line in lines do
@@ -581,16 +611,25 @@ import.BuildMonsterTables = function(self)
         end
     end
     raw:close();
+    self.MonsterCount = monsterCount;
     print(chat.header('MobDB') .. chat.message(string.format('Built monster tables in %.2fs.  Total Entries:%u', os.clock() - startTime, monsterCount)));
 end
 
-import.BuildTables = function(self)
+import.BuildTables = function(self, wings)
     self:BuildDropTable();
+    coroutine.sleep(0.1);
     self:BuildSpellTable();
+    coroutine.sleep(0.1);
     self:BuildGroupTables();
+    coroutine.sleep(0.1);
     self:BuildPoolTable();
-    self:BuildFamilyTable();
-    self:BuildResistanceTable();
+    coroutine.sleep(0.1);
+    self:BuildFamilyTable(wings);
+    coroutine.sleep(0.1);
+    if wings ~= true then
+        self:BuildResistanceTable();
+        coroutine.sleep(0.1);
+    end
     self:BuildMonsterTables();
 end
 
@@ -600,162 +639,168 @@ import.CheckFiles = function(self)
         if ashita.fs.exists(path) then
             local output = self:LoadTable(path);
             if type(output) == 'table' then
-                print(chat.header('MobDB') .. chat.message('Successfully loaded zone: ') .. chat.color1(2, AshitaCore:GetResourceManager():GetString('zones.names', index)));
+                print(chat.header('MobDB') .. chat.message('Successfully loaded zone: ') .. chat.color1(2, AshitaCore:GetResourceManager():GetString(gCompatibility.Resource.Zone, index)));
             end
         end
     end
 end
 
 import.GenerateData = function(self)
-    local timeStart = os.clock();
+    local startTime = os.clock();
+    local pauseCount = 0;
     local zoneCount = 0;
-    local totalSuccess = 0;
-    local totalGroup = 0;
-    local totalPool = 0;
-    local totalFamily = 0;
-    local errors = io.open(string.format('%sconfig/addons/mobdb/output/errors.txt', AshitaCore:GetInstallPath()), 'w');
+    self.ProgressCount = 0;
+    self.SuccessCount = 0;
+    self.ErrorFile = io.open(string.format('%sconfig/addons/mobdb/output/errors.txt', AshitaCore:GetInstallPath()), 'w');
     for zoneId,mobs in pairs(self.Monsters) do
-        local groups = self.Groups[zoneId];        
-        local outFile = io.open(string.format('%sconfig/addons/mobdb/output/%u.lua', AshitaCore:GetInstallPath(), zoneId), 'w');
-        local zoneDat = LoadEntityDat(zoneId);
-        local groupFailCount = 0;
-        local poolFailCount = 0;
-        local familyFailCount = 0;
-        local successCount = 0;
+        self.ActiveGroups = self.Groups[zoneId];
+        self.ActiveMobs = mobs;
+        if (type(self.ActiveGroups) == 'table') then
+            self.OutputFile = io.open(string.format('%sconfig/addons/mobdb/output/%u.lua', AshitaCore:GetInstallPath(), zoneId), 'w');
+            self.ZoneDat = LoadEntityDat(zoneId);
 
-        outFile:write(string.format('--Zone: %s\n', AshitaCore:GetResourceManager():GetString('zones.names', zoneId)));
-        outFile:write(string.format('--Zone ID: %u\n', zoneId));
-        outFile:write('return {\n');
-        for mobIndex = 1,0x3FF do
-            local data = mobs[mobIndex];
-            if (data ~= nil) then
-                if (type(zoneDat) == 'table') and (zoneDat[mobIndex] ~= nil) then
-                    local datName = zoneDat[mobIndex].Name;
-                    if (string.lower(string.gsub(data.Name, '%W', '')) ~= string.lower(string.gsub(datName, '%W', ''))) then
-                        errors:write(string.format('[LSB MISMATCH] Zone:%s Index:%u Id:%u Name:%s LSB Name:%s\n', AshitaCore:GetResourceManager():GetString('zones.names', zoneId), mobIndex, data.Id, zoneDat[mobIndex].Name, data.Name));                        
-                    else
-                        data.Name = datName;
-                        local groupId = data.Group;
-                        local group = groups[groupId];
-                        if not group then
-                            groupFailCount = groupFailCount + 1;
-                        else
-                            local poolId = group.PoolId;
-                            local pool = self.Pools[poolId];
-                            if not pool then
-                                poolFailCount = poolFailCount + 1;
-                            else
-                                local familyId = pool.FamilyId;
-                                local family = self.Families[familyId];
-                                local resists = self.Resists[familyId];
-                                if (not family) or (not resists) then
-                                    familyFailCount = familyFailCount + 1;
-                                else
-                                    if pool.MobType == 2 then
-                                        data.NM = true;
-                                    end
-                                    local detectFlags = family.Detection;
-                                    local isNotorious = data.NM and 'true' or 'false';
-                                    local isAggro = pool.Aggressive and 'true' or 'false';
-                                    local isTrueSight = pool.TrueSight and 'true' or 'false';
-                                    local isLinking = pool.Linking and 'true' or 'false';
-                                    local detection = T{};
-                                    local isSight = (bit.band(detectFlags, 0x01) ~= 0) and 'true' or 'false';
-                                    local isSound = (bit.band(detectFlags, 0x02) ~= 0) and 'true' or 'false';
-                                    local isBlood = (bit.band(detectFlags, 0x04) ~= 0) and 'true' or 'false';
-                                    local isMagic = (bit.band(detectFlags, 0x20) ~= 0) and 'true' or 'false';
-                                    local isJA = (bit.band(detectFlags, 0xC0) ~= 0) and 'true' or 'false';
-                                    local isScent = (bit.band(detectFlags, 0x100) ~= 0) and 'true' or 'false';
-                                    local minLevel = group.MinLevel;
-                                    local maxLevel = group.MaxLevel;
-                                    
-                                    local job = 0;
-                                    if humanoid_families:contains(family.SuperFamilyId) then
-                                        job = pool.MainJob;
-                                    end
+            local progress = self.ProgressCount;
+            local success = self.SuccessCount;
 
-                                    local spellPool = pool.SpellGroup;
-                                    local spells = T{};
-                                    if (spellPool ~= 0) then
-                                        for _,spell in pairs(self.Spells) do
-                                            if (spell.SpellGroupId == spellPool) then
-                                                if (minLevel <= spell.MaxLevel) and (maxLevel >= spell.MinLevel) then
-                                                    spells:append(spell.Spell);
-                                                end
-                                            end
-                                        end
-                                    end
+            self.OutputFile:write(string.format('--Zone: %s\n', AshitaCore:GetResourceManager():GetString(gCompatibility.Resource.Zone, zoneId)));
+            self.OutputFile:write(string.format('--Zone ID: %u\n', zoneId));
+            self.OutputFile:write('return {\n');
+            for mobIndex = 1,0x3FF do
+                self:ProcessMob(zoneId, mobIndex);
+            end
+            self.OutputFile:write('};');
+            self.OutputFile:close();
 
-                                    local dropPool = group.DropPoolId;
-                                    local drops = T{};
-                                    if (dropPool ~= 0) then
-                                        for _,drop in pairs(self.Drops) do
-                                            if (drop.DropPoolId == dropPool) and (not drops:contains(drop.ItemId)) then
-                                                drops:append(drop.ItemId);
-                                            end
-                                        end
-                                    end
+            success = self.SuccessCount - success;
+            local failure = (self.ProgressCount - progress) - success;
+            self.ErrorFile:write(string.format('Zone:%s Success:%d Failure:%d\n', AshitaCore:GetResourceManager():GetString(gCompatibility.Resource.Zone, zoneId), success, failure));
 
-                                    outFile:write(string.format('    [%d] = { Name=\'%s\', Notorious=%s, Aggro=%s, Link=%s, TrueSight=%s, Job=%d, MinLevel=%d, MaxLevel=%d, Respawn=%d, Sight=%s, Sound=%s, Blood=%s, Magic=%s, JA=%s, Scent=%s, Drops={',
-                                    mobIndex, string.gsub(data.Name, '\'', '\\\''), isNotorious, isAggro, isLinking, isTrueSight, job, group.MinLevel, group.MaxLevel, group.RespawnTime, isSight, isSound, isBlood, isMagic,  isJA, isScent));
-                                    local first = true;
-                                    for _,itemId in ipairs(drops) do
-                                        if not first then outFile:write(','); end
-                                        outFile:write(itemId);
-                                        first = false;
-                                    end
+            if (self.ProgressCount > pauseCount) then
+                zoneCount = zoneCount + 1;
+                print(chat.header('MobDB') .. chat.message('Progress: ') .. chat.color1(2, string.format('%d/%d', self.ProgressCount, self.MonsterCount)) .. chat.message(' Failures:') .. chat.color1(2, string.format('%d', self.ProgressCount - self.SuccessCount)));
+                coroutine.sleep(0.1);
+                pauseCount = self.ProgressCount;
+            end
+        end
+    end
+    self.ErrorFile:write(string.format('Total Zones:%d Total Success:%d Total Failure:%d\n', zoneCount, self.SuccessCount, self.ProgressCount - self.SuccessCount));
+    self.ErrorFile:close();
+    print(chat.header('MobDB') .. chat.message('Total Success:') .. chat.color1(2, self.SuccessCount) .. chat.message(' Total Failures:') .. chat.color1(2, string.format('%d', self.ProgressCount - self.SuccessCount)) .. chat.message(' Total Time:') .. chat.color1(2, string.format('%.2fs', os.clock() - startTime)));
+end
 
-                                    outFile:write('}, Spells={');
-                                    first = true;
-                                    for _,spellId in ipairs(spells) do
-                                        if not first then outFile:write(','); end
-                                        outFile:write(spellId);
-                                        first = false;
-                                    end
+import.ProcessMob = function(self, zoneId, mobIndex)
+    local data = self.ActiveMobs[mobIndex];
+    if (data == nil) then
+        return;
+    end
 
-                                    outFile:write('}, Modifiers={');                                    
-                                    local modifiers = { 'Slashing', 'Piercing', 'H2H', 'Impact', 'Fire', 'Ice', 'Wind', 'Earth', 'Lightning', 'Water', 'Light', 'Dark' };
-                                    local first = true;
-                                    for _,mod in ipairs(modifiers) do
-                                        if not first then
-                                            outFile:write(', ');
-                                        end
-                                        local text = string.gsub(string.format('%s=%f', mod, resists[mod]), "0+$", ""):gsub('%.$', '');
-                                        outFile:write(text);
-                                        first = false;
-                                    end
-                                    outFile:write('} },\n');
-                                    successCount = successCount + 1;
-                                end
-                            end
-                        end
-                    end
+    self.ProgressCount = self.ProgressCount + 1;
+    if (type(self.ZoneDat) ~= 'table') or (self.ZoneDat[mobIndex] == nil) then
+        return;
+    end
+
+    local datName = self.ZoneDat[mobIndex].Name;
+    if (string.lower(string.gsub(data.Name, '%W', '')) ~= string.lower(string.gsub(datName, '%W', ''))) then
+        self.ErrorFile:write(string.format('[DAT MISMATCH] Zone:%s Index:%u Id:%u Name:%s LSB Name:%s\n', AshitaCore:GetResourceManager():GetString(gCompatibility.Resource.Zone, zoneId), mobIndex, data.Id, self.ZoneDat[mobIndex].Name, data.Name));
+        return;
+    end
+    data.Name = datName;
+
+    local group = self.ActiveGroups[data.Group];
+    if (group == nil) then
+        return;
+    end
+    
+    local pool = self.Pools[group.PoolId];
+    if (pool == nil) then
+        return;
+    end
+    
+    local family = self.Families[pool.FamilyId];
+    if (family == nil) then
+        return;
+    end
+
+    local resists = self.Resists[pool.FamilyId];
+    if (resists == nil) then
+        return;
+    end
+
+    
+    if pool.MobType == 2 then
+        data.NM = true;
+    end
+    local detectFlags = family.Detection;
+    local isNotorious = data.NM and 'true' or 'false';
+    local isAggro = pool.Aggressive and 'true' or 'false';
+    local isTrueSight = pool.TrueSight and 'true' or 'false';
+    local isLinking = pool.Linking and 'true' or 'false';
+    local isSight = (bit.band(detectFlags, 0x01) ~= 0) and 'true' or 'false';
+    local isSound = (bit.band(detectFlags, 0x02) ~= 0) and 'true' or 'false';
+    local isBlood = (bit.band(detectFlags, 0x04) ~= 0) and 'true' or 'false';
+    local isMagic = (bit.band(detectFlags, 0x20) ~= 0) and 'true' or 'false';
+    local isJA = (bit.band(detectFlags, 0xC0) ~= 0) and 'true' or 'false';
+    local isScent = (bit.band(detectFlags, 0x100) ~= 0) and 'true' or 'false';
+    local minLevel = group.MinLevel;
+    local maxLevel = group.MaxLevel;
+    
+    local job = 0;
+    if humanoid_families:contains(family.SuperFamilyId) then
+        job = pool.MainJob;
+    end
+
+    local spellPool = pool.SpellGroup;
+    local spells = T{};
+    if (spellPool ~= 0) then
+        for _,spell in pairs(self.Spells) do
+            if (spell.SpellGroupId == spellPool) then
+                if (minLevel <= spell.MaxLevel) and (maxLevel >= spell.MinLevel) then
+                    spells:append(spell.Spell);
                 end
             end
         end
-        outFile:write('};');
-        outFile:close();
-        
-        errors:write('Zone:' .. AshitaCore:GetResourceManager():GetString('zones.names', zoneId));
-        errors:write(' Resolved Mobs:' .. successCount);
-        errors:write(' Group Fail:' .. groupFailCount);
-        errors:write(' Pool Fail:' .. poolFailCount);
-        errors:write(' Family Fail:' .. familyFailCount);
-        errors:write('\n');
-        zoneCount = zoneCount + 1;
-        totalSuccess = totalSuccess + successCount;
-        totalGroup = totalGroup + groupFailCount;
-        totalPool = totalPool + poolFailCount;
-        totalFamily = totalFamily + familyFailCount;
     end
-    errors:write('Total Zones:' .. zoneCount);
-    errors:write(' Resolved Mobs:' .. totalSuccess);
-    errors:write(' Group Fail:' .. totalGroup);
-    errors:write(' Pool Fail:' .. totalPool);
-    errors:write(' Family Fail:' .. totalFamily);
-    errors:write('\n');
-    errors:close();
-    print(chat.header('MobDB') .. chat.message('Total Mobs:') .. chat.color1(2, totalSuccess) .. chat.message(' Total Time:') .. chat.color1(2, string.format('%.2fs', os.clock() - timeStart)));
+
+    local dropPool = group.DropPoolId;
+    local drops = T{};
+    if (dropPool ~= 0) then
+        for _,drop in pairs(self.Drops) do
+            if (drop.DropPoolId == dropPool) and (not drops:contains(drop.ItemId)) then
+                drops:append(drop.ItemId);
+            end
+        end
+    end
+
+    self.OutputFile:write(string.format('    [%d] = { Name=\'%s\', Notorious=%s, Aggro=%s, Link=%s, TrueSight=%s, Job=%d, MinLevel=%d, MaxLevel=%d, Respawn=%d, Sight=%s, Sound=%s, Blood=%s, Magic=%s, JA=%s, Scent=%s, Drops={',
+    mobIndex, string.gsub(data.Name, '\'', '\\\''), isNotorious, isAggro, isLinking, isTrueSight, job, group.MinLevel, group.MaxLevel, group.RespawnTime, isSight, isSound, isBlood, isMagic,  isJA, isScent));
+    local first = true;
+    for _,itemId in ipairs(drops) do
+        if not first then self.OutputFile:write(','); end
+        self.OutputFile:write(itemId);
+        first = false;
+    end
+
+    self.OutputFile:write('}, Spells={');
+    first = true;
+    for _,spellId in ipairs(spells) do
+        if not first then self.OutputFile:write(','); end
+        self.OutputFile:write(spellId);
+        first = false;
+    end
+
+    self.OutputFile:write('}, Modifiers={');                                    
+    local modifiers = { 'Slashing', 'Piercing', 'H2H', 'Impact', 'Fire', 'Ice', 'Wind', 'Earth', 'Lightning', 'Water', 'Light', 'Dark' };
+    local first = true;
+    for _,mod in ipairs(modifiers) do
+        if not first then
+            self.OutputFile:write(', ');
+        end
+        local text = string.gsub(string.format('%s=%f', mod, resists[mod]), "0+$", ""):gsub('%.$', '');
+        self.OutputFile:write(text);
+        first = false;
+    end
+    self.OutputFile:write('} },\n');
+    self.SuccessCount = self.SuccessCount + 1;
 end
 
 return import;

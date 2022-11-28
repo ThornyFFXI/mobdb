@@ -1,7 +1,3 @@
-
-local d3d8 = require('d3d8');
-local d3d8_device = d3d8.get_device();
-
 local function LoadTexture(filePath)
     local dx_texture_ptr = ffi.new('IDirect3DTexture8*[1]');
     if (ffi.C.D3DXCreateTextureFromFileA(d3d8_device, filePath, dx_texture_ptr) == ffi.C.S_OK) then

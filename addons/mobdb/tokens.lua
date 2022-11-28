@@ -64,6 +64,56 @@ local function PrintFlags(resource)
         end
     end
 end
+local function PrintDebugFlags()
+    local flags = {
+        'AggroHQ',
+        'PassiveHQ',
+        'AggroNQ',
+        'PassiveNQ',
+        'Link',
+        'TrueSight',
+        'Sight',
+        'Sound',
+        'Scent',
+        'Magic',
+        'JA',
+        'Blood',        
+    };
+    local first = true;
+    for index,flag in ipairs(flags) do
+        if (gTextures.Cache[flag] ~= nil) then
+            if not first then
+                imgui.SameLine();
+            end
+            imgui.Image(tonumber(ffi.cast("uint32_t", gTextures.Cache[flag])), {13 * gSettings.Scale, 13 * gSettings.Scale });
+            first = false;
+        end
+    end
+    flags = {
+        'H2H',
+        'Impact',
+        'Piercing',
+        'Slashing',
+        'Fire',
+        'Earth',
+        'Water',
+        'Wind',
+        'Ice',
+        'Lightning',
+        'Light',
+        'Dark'
+    };
+    first = true;
+    for index,flag in ipairs(flags) do
+        if (gTextures.Cache[flag] ~= nil) then
+            if not first then
+                imgui.SameLine();
+            end
+            imgui.Image(tonumber(ffi.cast("uint32_t", gTextures.Cache[flag])), {13 * gSettings.Scale, 13 * gSettings.Scale });
+            first = false;
+        end
+    end
+end
 
 return {
     ['$name'] = function(mob)
@@ -85,7 +135,7 @@ return {
     end,
     ['$zone'] = function(mob)
         local zoneId = partyMgr:GetMemberZone(0);
-        local string = resMgr:GetString('zones.names', zoneId);
+        local string = resMgr:GetString(gCompatibility.Resource.Zone, zoneId);
         if string then
             imgui.Text(string);
         else
@@ -96,9 +146,9 @@ return {
     ['$job'] = function(mob)        
         local resource = gData.Mobs[mob];
         if resource and resource.Job > 0 then
-            local output = resMgr:GetString('jobs.names_abbr', resource.Job);
+            local output = resMgr:GetString(gCompatibility.Resource.Jobs, resource.Job);
             if (resource.SubJob ~= nil) and (resource.SubJob > 0) then
-                output = output .. '/' .. resMgr:GetString('jobs.names_abbr', resource.SubJob);                    
+                output = output .. '/' .. resMgr:GetString(gCompatibility.Resource.Jobs, resource.SubJob);                    
             end
             imgui.Text(output);
         elseif mob <= 0x3FF then
@@ -107,7 +157,7 @@ return {
             if (mob == AshitaCore:GetMemoryManager():GetParty():GetMemberTargetIndex(0)) then
                 local mainJob = playMgr:GetMainJob();
                 local subJob = playMgr:GetSubJob();
-                imgui.Text(string.format('%s/%s', resMgr:GetString('jobs.names_abbr', mainJob), resMgr:GetString('jobs.names_abbr', subJob)));
+                imgui.Text(string.format('%s/%s', resMgr:GetString(gCompatibility.Resource.Jobs, mainJob), resMgr:GetString(gCompatibility.Resource.Jobs, subJob)));
             else
                 for i = 1,17 do
                     if partyMgr:GetMemberZone(i) == partyMgr:GetMemberZone(0) then
@@ -115,7 +165,7 @@ return {
                             local mainJob = partyMgr:GetMemberMainJob(i);
                             local subJob = partyMgr:GetMemberSubJob(i);
                             if ((mainJob ~= 0) or (subJob ~= 0)) then
-                                imgui.Text(string.format('%s/%s', resMgr:GetString('jobs.names_abbr', mainJob), resMgr:GetString('jobs.names_abbr', subJob)));
+                                imgui.Text(string.format('%s/%s', resMgr:GetString(gCompatibility.Resource.Jobs, mainJob), resMgr:GetString(gCompatibility.Resource.Jobs, subJob)));
                             end
                             break;
                         end
@@ -161,9 +211,9 @@ return {
         if resource then
             local output = string.format('[Lv%d-%d', resource.MinLevel, resource.MaxLevel);
             if (resource.Job > 0) then
-                output = output .. ' ' .. resMgr:GetString('jobs.names_abbr', resource.Job);
+                output = output .. ' ' .. resMgr:GetString(gCompatibility.Resource.Jobs, resource.Job);
                 if (resource.SubJob ~= nil) and (resource.SubJob > 0) then
-                    output = output .. '/' .. resMgr:GetString('jobs.names_abbr', resource.SubJob);                    
+                    output = output .. '/' .. resMgr:GetString(gCompatibility.Resource.Jobs, resource.SubJob);                    
                 end
             end
             output = output .. ']';
@@ -174,9 +224,9 @@ return {
         else
             if (mob == AshitaCore:GetMemoryManager():GetParty():GetMemberTargetIndex(0)) then
                 local output = string.format('[%s%u/%s%u]',
-                    resMgr:GetString('jobs.names_abbr', playMgr:GetMainJob()),
+                    resMgr:GetString(gCompatibility.Resource.Jobs, playMgr:GetMainJob()),
                     playMgr:GetMainJobLevel(),
-                    resMgr:GetString('jobs.names_abbr', playMgr:GetSubJob()),
+                    resMgr:GetString(gCompatibility.Resource.Jobs, playMgr:GetSubJob()),
                     playMgr:GetSubJobLevel());
                 imgui.Text(output);
                 return true;
@@ -187,9 +237,9 @@ return {
                             local level = partyMgr:GetMemberMainJobLevel(i);
                             if (level > 0) then
                                 local output = string.format('[%s%u/%s%u]',
-                                    resMgr:GetString('jobs.names_abbr', partyMgr:GetMemberMainJob(i)),
+                                    resMgr:GetString(gCompatibility.Resource.Jobs, partyMgr:GetMemberMainJob(i)),
                                     partyMgr:GetMemberMainJobLevel(i),
-                                    resMgr:GetString('jobs.names_abbr', partyMgr:GetMemberSubJob(i)),
+                                    resMgr:GetString(gCompatibility.Resource.Jobs, partyMgr:GetMemberSubJob(i)),
                                     partyMgr:GetMemberSubJobLevel(i));
                                 imgui.Text(output);
                                 return true;
@@ -367,6 +417,10 @@ return {
         else
             return false;
         end
+    end,
+    ['$debugflags'] = function(mob)
+        PrintDebugFlags();
+        return true;
     end,
     ['$spawncount'] = function(mob)
         

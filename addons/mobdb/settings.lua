@@ -52,8 +52,8 @@ local function SaveFunction(self, characterSpecific)
     if not self.Path then
         print(chat.header(addon.name) .. chat.error('No path is set.  Could not save settings.'));
     end
-    self:CreateDirectories(('%sconfig\\addons\\%s\\inputs\\'):fmt(AshitaCore:GetInstallPath(), addon.name));
-    self:CreateDirectories(('%sconfig\\addons\\%s\\outputs\\'):fmt(AshitaCore:GetInstallPath(), addon.name));
+    self:CreateDirectories(('%sconfig\\addons\\%s\\input\\'):fmt(AshitaCore:GetInstallPath(), addon.name));
+    self:CreateDirectories(('%sconfig\\addons\\%s\\output\\'):fmt(AshitaCore:GetInstallPath(), addon.name));
     local file = io.open(self.Path, 'w');
     file:write('--Automatically generated settings file for: ' .. addon.name .. '\n');
     file:write('local settings = {\n');
@@ -61,6 +61,10 @@ local function SaveFunction(self, characterSpecific)
         file:write('    CharacterSpecific = ' .. tostring(self.CharacterSpecific) .. ',\n');
     end
     file:write(string.format('    Scale=%f,\n', self.Scale));
+    file:write(string.format('    Alpha=%f,\n', self.Alpha));
+    if (self.Color) then
+        file:write(string.format('    Color={%f,%f,%f,%f}\n,\n', self.Color[1], self.Color[2], self.Color[3], self.Color[4]));
+    end
     file:write(string.format('    MobFormat=\'%s\',\n', self.MobFormat:gsub('\'', '\\\'')));
     file:write(string.format('    PlayerFormat=\'%s\',\n', self.PlayerFormat:gsub('\'', '\\\'')));
     file:write(string.format('    NPCFormat=\'%s\',\n', self.NPCFormat:gsub('\'', '\\\'')));
@@ -74,6 +78,8 @@ end
 local defaultSettings = {
     CharacterSpecific = true,
     Scale = 1.2,
+    Alpha = 0.8,
+    Color = nil,
     MobFormat = '$name$joblevel $aggro$LB$physmagic',
     PlayerFormat = '$name$joblevel Id:$id $position1',
     NPCFormat = '$name Index:$index Id:$id $position1',

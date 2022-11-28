@@ -1,14 +1,17 @@
 addon.name      = 'mobdb'
 addon.author    = 'Thorny';
-addon.version   = '1.0';
+addon.version   = '1.01';
 addon.desc      = 'Displays various information about monsters.';
 addon.link      = 'https://ashitaxi.com/';
 
 require('common');
 chat = require('chat');
+d3d8 = require('d3d8');
+d3d8_device = d3d8.get_device();
 ffi = require('ffi');
 imgui = require('imgui');
 
+gCompatibility = require('compatibility');
 gData = require('database');
 gSettings = require('settings');
 gTextures = require('textures');
@@ -34,9 +37,17 @@ ashita.events.register('command', 'command_cb', function (e)
 
     if (#args > 1) then
         if (args[2] == 'import') then
-            local import = require('import');
-            import:BuildTables();
-            import:GenerateData();            
+            if (#args > 2) and (string.lower(args[3]) == 'wings') then
+                local import = require('import');
+                import:BuildTables(true);
+                import:GenerateData();
+            elseif (#args > 2) and (string.lower(args[3]) == 'wings') then
+                local import = require('import');
+                import:BuildTables(true);
+                import:GenerateData();
+            else
+                print(chat.header('MobDB') .. chat.error('Invalid syntax.  Please use ') .. chat.color1(2, '/mobdb import wings') .. chat.error(' or ') .. chat.color1(2, '/mobdb import lsb') .. chat.error('.'));
+            end
         end
     end
 end);

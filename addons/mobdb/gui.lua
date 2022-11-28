@@ -96,9 +96,17 @@ function SettingsGui:Render()
                 imgui.ShowHelp('Uses settings specific to this character, rather than defaults.', true);
                 imgui.TextColored(self.Theme.Header, 'Draw Scale');
                 local scale = { self.Parent.Scale };
-                if (imgui.SliderFloat('##Scale', scale, 0.5, 3.0, '%.1f', ImGuiSliderFlags_AlwaysClamp)) then
+                if (imgui.SliderFloat('##Scale', scale, 0.5, 3.0, '%.2f', ImGuiSliderFlags_AlwaysClamp)) then
                     if (scale[1] ~= self.Parent.Scale) then
                         self.Parent.Scale = scale[1];
+                        self.Parent:Save(self.Parent.CharacterSpecific);
+                    end
+                end
+                imgui.TextColored(self.Theme.Header, 'Opacity');
+                local alpha = { self.Parent.Alpha };
+                if (imgui.SliderFloat('##Alpha', alpha, 0.1, 1.0, '%.2f', ImGuiSliderFlags_AlwaysClamp)) then
+                    if (alpha[1] ~= self.Parent.Alpha) then
+                        self.Parent.Alpha = alpha[1];
                         self.Parent:Save(self.Parent.CharacterSpecific);
                     end
                 end
