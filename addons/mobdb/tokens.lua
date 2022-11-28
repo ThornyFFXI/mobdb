@@ -4,10 +4,14 @@ local partyMgr = memMgr:GetParty();
 local playMgr = memMgr:GetPlayer();
 local resMgr = AshitaCore:GetResourceManager();
 
+local function Image(fileName)
+    imgui.Image(tonumber(ffi.cast("uint32_t", gTextures.Cache[fileName])), {13 * gSettings.Scale, 13 * gSettings.Scale }, { 0, 0 }, { 1, 1 }, { 1, 1, 1, 1 }, { 0, 0, 0, 0 });
+end
+
 local function PrintMods(mods)
     for index,mod in ipairs(mods) do
         if (gTextures.Cache[mod.Type] ~= nil) then
-            imgui.Image(tonumber(ffi.cast("uint32_t", gTextures.Cache[mod.Type])), {13 * gSettings.Scale, 13 * gSettings.Scale });
+            Image(mod.Type);
             imgui.SameLine();
         end
 
@@ -34,15 +38,15 @@ end
 local function PrintFlags(resource)
     if (resource.Notorious) then
         if (resource.Aggro) then
-            imgui.Image(tonumber(ffi.cast("uint32_t", gTextures.Cache['AggroHQ'])), {13 * gSettings.Scale, 13 * gSettings.Scale });
+            Image('AggroHQ');
         else
-            imgui.Image(tonumber(ffi.cast("uint32_t", gTextures.Cache['PassiveHQ'])), {13 * gSettings.Scale, 13 * gSettings.Scale });
+            Image('PassiveHQ');
         end
     else
         if (resource.Aggro) then
-            imgui.Image(tonumber(ffi.cast("uint32_t", gTextures.Cache['AggroNQ'])), {13 * gSettings.Scale, 13 * gSettings.Scale });
+            Image('AggroNQ');
         else
-            imgui.Image(tonumber(ffi.cast("uint32_t", gTextures.Cache['PassiveNQ'])), {13 * gSettings.Scale, 13 * gSettings.Scale });
+            Image('PassiveNQ');
         end
     end
 
@@ -60,7 +64,7 @@ local function PrintFlags(resource)
     for _,flag in ipairs(flags) do
         if (resource[flag] == true) and (gTextures.Cache[flag] ~= nil) then
             imgui.SameLine();
-            imgui.Image(tonumber(ffi.cast("uint32_t", gTextures.Cache[flag])), {13 * gSettings.Scale, 13 * gSettings.Scale });            
+            Image(flag);
         end
     end
 end
@@ -85,7 +89,7 @@ local function PrintDebugFlags()
             if not first then
                 imgui.SameLine();
             end
-            imgui.Image(tonumber(ffi.cast("uint32_t", gTextures.Cache[flag])), {13 * gSettings.Scale, 13 * gSettings.Scale });
+            Image(flag);
             first = false;
         end
     end
@@ -109,7 +113,7 @@ local function PrintDebugFlags()
             if not first then
                 imgui.SameLine();
             end
-            imgui.Image(tonumber(ffi.cast("uint32_t", gTextures.Cache[flag])), {13 * gSettings.Scale, 13 * gSettings.Scale });
+            Image(flag);
             first = false;
         end
     end

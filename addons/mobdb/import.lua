@@ -294,8 +294,17 @@ local entityDatPaths = {
 --This is used for jobs.  Every mob under the sun isn't actually a WAR just because it has DA.
 --Most are almost certainly implemented with their job as RAPTOR, BEETLE, etc.
 --Beastmen, humanoids, aerns, etc.. do have actual jobs and retain their stats and traits.
-local humanoid_families = T{
+local humanoid_families_lsb = T{
+
+};
+local humanoid_superfamilies_lsb = T{
     3, 25, 61, 68, 74, 77, 86, 92, 94, 98, 106, 115, 116, 125, 68, 138, 141, 151
+};
+local humanoid_families_wings = T{
+    3, 115, 169, 221, 222, 223, 358, 359, 509
+};
+local humanoid_superfamilies_wings = T{
+    7, 13
 };
 
 
@@ -496,7 +505,7 @@ import.BuildFamilyTable = function(self, wings)
             if wings == true then
                 local family = {
                     FamilyId = tonumber(split[1]),
-                    SuperFamilyId = tonumber(split[3]),
+                    DetectJob = (humanoid_families_wings:contains(tonumber(split[1])) or humanoid_superfamilies_wings:contains(tonumber(split[3]))),
                     Detection = tonumber(split[34])
                 };
                 self.Families[family.FamilyId] = family;
@@ -521,7 +530,7 @@ import.BuildFamilyTable = function(self, wings)
             else
                 local family = {
                     FamilyId = tonumber(split[1]),
-                    SuperFamilyId = tonumber(split[3]),
+                    DetectJob = (humanoid_families_lsb:contains(tonumber(split[1])) or humanoid_superfamilies_lsb:contains(tonumber(split[3]))),
                     Detection = tonumber(split[23])
                 };
                 self.Families[family.FamilyId] = family;
@@ -701,7 +710,7 @@ import.ProcessMob = function(self, zoneId, mobIndex)
 
     local datName = self.ZoneDat[mobIndex].Name;
     if (string.lower(string.gsub(data.Name, '%W', '')) ~= string.lower(string.gsub(datName, '%W', ''))) then
-        self.ErrorFile:write(string.format('[DAT MISMATCH] Zone:%s Index:%u Id:%u Name:%s LSB Name:%s\n', AshitaCore:GetResourceManager():GetString(gCompatibility.Resource.Zone, zoneId), mobIndex, data.Id, self.ZoneDat[mobIndex].Name, data.Name));
+        self.ErrorFile:write(string.format('[DAT MISMATCH] Zone:%s Index:%u Id:%u DAT Name:%s SQL Name:%s\n', AshitaCore:GetResourceManager():GetString(gCompatibility.Resource.Zone, zoneId), mobIndex, data.Id, self.ZoneDat[mobIndex].Name, data.Name));
         return;
     end
     data.Name = datName;
@@ -745,7 +754,7 @@ import.ProcessMob = function(self, zoneId, mobIndex)
     local maxLevel = group.MaxLevel;
     
     local job = 0;
-    if humanoid_families:contains(family.SuperFamilyId) then
+    if family.DetectJob == true then
         job = pool.MainJob;
     end
 
