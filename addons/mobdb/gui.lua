@@ -17,6 +17,8 @@ local SettingsGui = {
 local TokenHelpData = {
     { Token='$name', Explanation='The name of your current target.'},
     { Token='$index', Explanation='The zone-specific index of your current target.'},
+    { Token='$hexindex', Explanation='The zone-specific index of your current target, in hex notation.'},
+    { Token='$hexid', Explanation='The game-specific id of your current target, in hex notation.'},
     { Token='$id', Explanation='The game-specific id of your current target.'},
     { Token='$zone', Explanation='Your current zone\'s name.'},
     { Token='$job', Explanation='Your current target\'s job if available, ??? if not.'},
