@@ -193,6 +193,14 @@ return {
         end
         return true;
     end,
+    ['$hexindex'] = function(mob)
+        imgui.Text(string.format('0x%X', mob));
+        return true;
+    end,
+    ['$hexid'] = function(mob)
+        imgui.Text(string.format('0x%X', entMgr:GetServerId(mob)));
+        return true;
+    end,
     ['$index'] = function(mob)
         imgui.Text(tostring(mob));
         return true;
