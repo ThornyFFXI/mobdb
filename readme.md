@@ -11,7 +11,7 @@ You can type this command to edit the appearance of mobdb and change the tokens,
 
 ## Generating Data For Your Custom Server ##
 This process is only intended for advanced users, and will allow you to generate data files that exactly match your LSB or wings based private server.  To do this, follow these directions:
-1. Change line 2 of import.lua to reflect your current FFXI install path.
+1. Change line 2 of import_lsb.lua, import_wings.lua, or import_custom.lua to reflect your current FFXI install path.
 2. Load the addon to generate initial configurations if you haven't.  Reload to update path if you changed it.
 3. Copy the following files into Ashita/config/addons/mobdb/input/ from your LSB server source:
 - mob_droplist.sql
@@ -21,5 +21,5 @@ This process is only intended for advanced users, and will allow you to generate
 - mob_resistances.sql (only for LSB-based servers, wings based won't have this)
 - mob_spawn_points.sql
 - mob_spell_lists.sql
-4. Type the command "/mobdb import wings" or "/mobdb import lsb" ingame.  This may take several minutes depending on your system.
+4. Type the command "/mobdb import wings" or "/mobdb import lsb" or "/mobdb import custom" ingame.  This may take several minutes depending on your system.
 5. Copy the files generated from Ashita/config/addons/mobdb/output/ to Ashita/addons/mobdb/data.

@@ -30,7 +30,14 @@ local function ResolveToken(input, outTable)
         outTable:append(bestFunc);
         return longestMatch;
     else
-        return 1;
+        local nextString = string.sub(input, 2);
+        local nextTokenIndex = string.find(nextString, '%$');
+        if (nextTokenIndex ~= nil) then
+            outTable:append(string.sub(input, 1, nextTokenIndex));
+            return nextTokenIndex;
+        else
+            return -1;
+        end
     end
 end
 
@@ -44,6 +51,9 @@ local function SplitTokens(input)
                 input = string.sub(input, 4);
             else
                 local length = ResolveToken(input, outTable);
+                if (length == -1) then
+                    break;
+                end
                 input = string.sub(input, length + 1);
             end
             nextToken = string.find(input, '%$');
@@ -74,21 +84,24 @@ end
 
 bar.Render = function(self)
     local memMgr = AshitaCore:GetMemoryManager();
+    local entMgr = memMgr:GetEntity();
     local targetMgr = memMgr:GetTarget();
     local targetIndex = targetMgr:GetTargetIndex(targetMgr:GetIsSubTargetActive());
     local renderTable = self.Layout.NothingFormat;
+    local targetResource = nil;
     if (targetIndex > 0) then
-        if (targetIndex < 0x400) then
-            local spawnFlags = AshitaCore:GetMemoryManager():GetEntity():GetSpawnFlags(targetIndex);
-            if (spawnFlags == 0x10) then
-                renderTable = self.Layout.MobFormat;
-            else
-                renderTable = self.Layout.NPCFormat;
-            end            
-        elseif (targetIndex < 0x700) then
+        if (targetIndex >= 0x400) and (targetIndex < 0x700) then
             renderTable = self.Layout.PlayerFormat;
-        else
+        elseif (targetIndex >= 0x700) and (entMgr:GetTrustOwnerTargetIndex(targetIndex) ~= 0) then
             renderTable = self.Layout.PetFormat;
+        elseif (bit.band(AshitaCore:GetMemoryManager():GetEntity():GetSpawnFlags(targetIndex), 0x10) ~= 0) then
+            renderTable = self.Layout.MobFormat;
+            targetResource = gData.Indices[targetIndex];
+            if targetResource == nil then
+                targetResource = gData.Names[entMgr:GetName(targetIndex)];
+            end
+        else
+            renderTable = self.Layout.NPCFormat;
         end
     end
 
@@ -100,32 +113,26 @@ bar.Render = function(self)
         imgui.SetNextWindowBgAlpha(gSettings.Alpha);
         if imgui.Begin('mobdb_infobar', self.State.IsOpen, bit.bor(ImGuiWindowFlags_NoDecoration, ImGuiWindowFlags_AlwaysAutoResize)) then
             imgui.SetWindowFontScale(gSettings.Scale);
-            local renderIndex = 1;
-            while (renderIndex <= #renderTable) do
-                local currentObject = renderTable[renderIndex];
+            gTokenState.FirstElement = true;
+            gTokenState.LineBreak = false;
+            for index,currentObject in ipairs(renderTable) do
                 if (type(currentObject) == 'function') then
-                    if (currentObject(targetIndex)) then                        
-                        local nextObject = renderTable[renderIndex + 1];
-                        if (type(nextObject) ~= 'string') or (nextObject ~= '$LB') then
-                            imgui.SameLine();
-                        end
-                    end
+                    currentObject(targetIndex, targetResource);
                 elseif (type(currentObject) == 'string') then
-                    if (currentObject ~= '$LB') then
+                    if (currentObject == '$LB') then
+                        gTokenState.LineBreak = true;
+                    else
+                        gTokenState:ProcessSameLines();
                         imgui.Text(currentObject);
-                        local nextObject = renderTable[renderIndex + 1];
-                        if (type(nextObject) ~= 'string') or (nextObject ~= '$LB') then
-                            imgui.SameLine();
-                        end
                     end
                 end
-                renderIndex = renderIndex + 1;
             end
             imgui.End();
         end
         if (gSettings.Color) then
             imgui.PopStyleColor();
         end
+        imgui.PopStyleVar();
     end
 end
 

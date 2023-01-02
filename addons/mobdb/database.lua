@@ -6,7 +6,8 @@ database.Load = function(self, zone)
     end
 
     self.CurrentZone = zone;
-    self.Mobs = {};
+    self.Names = T{};
+    self.Indices = T{};
     if (zone == 0) then
         return;
     end
@@ -27,7 +28,8 @@ database.Load = function(self, zone)
             return nil;
         end
     
-        self.Mobs = output;
+        self.Indices = output.Indices;
+        self.Names = output.Names;
     end
 end
 

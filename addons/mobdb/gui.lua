@@ -35,6 +35,7 @@ local TokenHelpData = {
     { Token='$physmagic', Explanation='Graphical display of elements and weapons the mob is strong or weak against.'},
     { Token='$immunity', Explanation='Graphical display of debuffs that a monster is immune to.' },
     { Token='$hpp', Explanation='The target\'s current HP percentage.'},
+    { Token='$dynamic', Explanation='Dynamic if the monster is a custom spawn, Static if it is a normal spawn.'},
     { Token='$aggro', Explanation='Graphical display indicating whether the target aggros, links, is a NM, and how it detects you.'},
     { Token='$debugflags', Explanation='Show all flags for debug purposes.' },
     { Token='$debugimmunity', Explanation='Show all immunity icons for debug purposes.' },
