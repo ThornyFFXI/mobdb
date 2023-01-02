@@ -627,16 +627,14 @@ import.GenerateData = function(self)
         self.ActiveMobs = mobs;
         self.ActiveZone = zoneId;
         if (type(self.ActiveGroups) == 'table') then
-            self.OutputFile = io.open(string.format('%sconfig/addons/mobdb/output/%u.lua', AshitaCore:GetInstallPath(), zoneId), 'w');
             self.ZoneDat = LoadEntityDat(zoneId);
-
             local progress = self.ProgressCount;
             local success = self.SuccessCount;
-
             local zoneData = T{
                 Names = T{},
                 Indices = T{},
             };
+
             for mobIndex = 1,0x3FF do
                 self:ProcessMob(zoneData, mobIndex);
             end
@@ -646,27 +644,31 @@ import.GenerateData = function(self)
             end
             table.sort(sortedNames, function(a,b) return a.Name < b.Name end);
 
-            self.OutputFile:write(string.format('--Zone: %s\n', AshitaCore:GetResourceManager():GetString(gCompatibility.Resource.Zone, zoneId)));
-            self.OutputFile:write(string.format('--Zone ID: %u\n', zoneId));
-            self.OutputFile:write('return {\n');
-            self.OutputFile:write('    Names = {\n');
-            for _,monster in ipairs(sortedNames) do
-                self.OutputFile:write(string.format('        [\'%s\'] = ', string.gsub(monster.Name, '\'', '\\\'')));
-                WriteMonster(monster, self.OutputFile);       
-            end
-            self.OutputFile:write('    },\n');
-            self.OutputFile:write('    Indices = {\n');
-            for index,monster in pairs(zoneData.Indices) do
-                self.OutputFile:write(string.format('        [%d] = ', index));
-                WriteMonster(monster, self.OutputFile);
-            end
-            self.OutputFile:write('    },\n');
-            self.OutputFile:write('};');
+            local output = io.open(string.format('%sconfig/addons/mobdb/output/%u.lua', AshitaCore:GetInstallPath(), zoneId), 'w');
+            if (output) then            
+                output:write(string.format('--Zone: %s\n', AshitaCore:GetResourceManager():GetString(gCompatibility.Resource.Zone, zoneId)));
+                output:write(string.format('--Zone ID: %u\n', zoneId));
+                output:write('return {\n');
+                output:write('    Names = {\n');
+                for _,monster in ipairs(sortedNames) do
+                    output:write(string.format('        [\'%s\'] = ', string.gsub(monster.Name, '\'', '\\\'')));
+                    WriteMonster(monster, output);       
+                end
+                output:write('    },\n');
+                output:write('    Indices = {\n');
+                for index,monster in pairs(zoneData.Indices) do
+                    output:write(string.format('        [%d] = ', index));
+                    WriteMonster(monster, output);
+                end
+                output:write('    },\n');
+                output:write('};');
+                output:close();
 
-            success = self.SuccessCount - success;
+                success = self.SuccessCount - success;
+            end
+
             local failure = (self.ProgressCount - progress) - success;
             self.ErrorFile:write(string.format('Zone:%s Success:%d Failure:%d\n', AshitaCore:GetResourceManager():GetString(gCompatibility.Resource.Zone, zoneId), success, failure));
-
             if (self.ProgressCount > pauseCount) then
                 zoneCount = zoneCount + 1;
                 print(chat.header('MobDB') .. chat.message('Progress: ') .. chat.color1(2, string.format('%d/%d', self.ProgressCount, self.MonsterCount)) .. chat.message(' Failures:') .. chat.color1(2, string.format('%d', self.ProgressCount - self.SuccessCount)));
@@ -794,6 +796,7 @@ import.ProcessMob = function(self, zoneData, mobIndex)
         end
     end
 
+    self.SuccessCount = self.SuccessCount + 1;
     local compare = zoneData.Names[newEntry.Name];
     if (compare ~= nil) then
         if CompareMobs(newEntry, compare) then
@@ -804,7 +807,6 @@ import.ProcessMob = function(self, zoneData, mobIndex)
     else
         zoneData.Names[newEntry.Name] = newEntry;
     end
-    self.SuccessCount = self.SuccessCount + 1;
 end
 
 return import;
