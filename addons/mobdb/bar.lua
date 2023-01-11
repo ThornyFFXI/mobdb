@@ -107,7 +107,8 @@ bar.Render = function(self)
 
     if (self.State.IsOpen[1]) and (#renderTable > 0) then
         imgui.PushStyleVar(ImGuiStyleVar_ItemSpacing, { self.Layout.ItemSpacing, self.Layout.ItemSpacing });
-        if gSettings.Color then
+        local pushColor = gSettings.Color;
+        if pushColor then
             imgui.PushStyleColor(ImGuiCol_WindowBg, gSettings.Color);
         end
         imgui.SetNextWindowBgAlpha(gSettings.Alpha);
@@ -129,7 +130,7 @@ bar.Render = function(self)
             end
             imgui.End();
         end
-        if (gSettings.Color) then
+        if pushColor then
             imgui.PopStyleColor();
         end
         imgui.PopStyleVar();
