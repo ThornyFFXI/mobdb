@@ -788,7 +788,7 @@ import.ProcessMob = function(self, zoneData, mobIndex)
     }
 
     if family.DetectJob == true then
-        newEntry.job = pool.MainJob;
+        newEntry.Job = pool.MainJob;
     end
 
     local spellPool = pool.SpellGroup;
