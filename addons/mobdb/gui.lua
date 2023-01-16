@@ -37,6 +37,8 @@ local TokenHelpData = {
     { Token='$hpp', Explanation='The target\'s current HP percentage.'},
     { Token='$dynamic', Explanation='Dynamic if the monster is a custom spawn, Static if it is a normal spawn.'},
     { Token='$aggro', Explanation='Graphical display indicating whether the target aggros, links, is a NM, and how it detects you.'},
+    { Token='$speed', Explanation='Entity speed, displayed in format 100%% 125%% etc.'},
+    { Token='$speedrelative', Explanation='Entity speed, displayed in format +12.5%% -12.5%% etc.'}, 
     { Token='$debugflags', Explanation='Show all flags for debug purposes.' },
     { Token='$debugimmunity', Explanation='Show all immunity icons for debug purposes.' },
     { Token='$notes', Explanation='Any notes saved on the target in the database.  Multiple notes always take a new line.' }
@@ -79,7 +81,7 @@ function SettingsGui:Render()
 
         if (self.TokenHelper.IsOpen[1]) then
             imgui.SetNextWindowSize({ 610, 597, });
-            if (imgui.Begin('MobDB Token Help', self.TokenEditor.IsOpen, ImGuiWindowFlags_NoResize)) then
+            if (imgui.Begin('MobDB Token Help', self.TokenHelper.IsOpen, ImGuiWindowFlags_NoResize)) then
                 for _,entry in pairs(TokenHelpData) do
                     imgui.TextColored(self.Theme.Header, entry.Token);
                     imgui.TextWrapped('  ' .. entry.Explanation);                    

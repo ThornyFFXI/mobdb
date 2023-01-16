@@ -487,7 +487,36 @@ return {
         end
     end,
     ['$speed'] = function(mob)
-
+        local entity = AshitaCore:GetMemoryManager():GetEntity():GetRawEntity(mob);
+        if entity == nil then
+            gTokenState:DrawText('??%%');
+        else
+            local speed = AshitaCore:GetMemoryManager():GetEntity():GetAnimationSpeed(mob) / 4;
+            if (mob > 0x3FF) and (mob < 0x700) then
+                speed = AshitaCore:GetMemoryManager():GetEntity():GetMovementSpeed(mob) / 5;
+            end
+            gTokenState:DrawText(string.format('%.2d%%%%', speed * 100));
+        end
+    end,
+    ['$speedrelative'] = function(mob)
+        local entity = AshitaCore:GetMemoryManager():GetEntity():GetRawEntity(mob);
+        if entity == nil then
+            gTokenState:DrawText('??%%');
+        else
+            local speed = AshitaCore:GetMemoryManager():GetEntity():GetAnimationSpeed(mob) / 4;
+            if (mob > 0x3FF) and (mob < 0x700) then
+                speed = AshitaCore:GetMemoryManager():GetEntity():GetMovementSpeed(mob) / 5;
+            end
+            if (speed == 1) then
+                gTokenState:DrawText('+0%%');
+            elseif (speed < 1) then
+                local speedDrop = math.floor((1 - speed) * 100);
+                gTokenState:DrawText(string.format('-%.2d%%%%', speedDrop));
+            else
+                local speedGain = math.floor((speed - 1) * 100);
+                gTokenState:DrawText(string.format('+%.2d%%%%', speedGain));
+            end
+        end
     end,
     ['$notes'] = function(mob, resource)
         if resource then
