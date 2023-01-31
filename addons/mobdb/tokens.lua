@@ -190,7 +190,7 @@ return {
         else
             local name = entMgr:GetName(mob);
             if (name ~= nil) then
-                gTokenState:DrawText();
+                gTokenState:DrawText(name);
             end
         end
     end,
