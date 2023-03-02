@@ -518,6 +518,44 @@ return {
             end
         end
     end,
+    ['$direction'] = function(mob)
+        local entity = AshitaCore:GetMemoryManager():GetEntity():GetRawEntity(mob);
+        if (entity == nil) then
+            return;
+        end
+
+        local myIndex = AshitaCore:GetMemoryManager():GetParty():GetMemberTargetIndex(0); 
+        local myPosition = {
+            X = AshitaCore:GetMemoryManager():GetEntity():GetLocalPositionX(myIndex),
+            Y = AshitaCore:GetMemoryManager():GetEntity():GetLocalPositionY(myIndex),
+        };
+        local targetPosition = {
+            X = AshitaCore:GetMemoryManager():GetEntity():GetLocalPositionX(mob),
+            Y = AshitaCore:GetMemoryManager():GetEntity():GetLocalPositionY(mob),
+        };
+
+        local rads = math.atan2(targetPosition.X - myPosition.X, targetPosition.Y - myPosition.Y);
+
+        if (rads > 2.74) then
+            gTokenState:DrawText('South');
+        elseif (rads > 1.96) then
+            gTokenState:DrawText('SouthEast');
+        elseif (rads > 1.17) then
+            gTokenState:DrawText('East');
+        elseif (rads > 0.39) then
+            gTokenState:DrawText('NorthEast');
+        elseif (rads > -0.39) then
+            gTokenState:DrawText('North');
+        elseif (rads > -1.17) then
+            gTokenState:DrawText('NorthWest');
+        elseif (rads > -1.96) then
+            gTokenState:DrawText('West');
+        elseif (rads > -2.7) then
+            gTokenState:DrawText('SouthWest');
+        else
+            gTokenState:DrawText('South');
+        end
+    end,
     ['$notes'] = function(mob, resource)
         if resource then
             if (resource.Notes) and (#resource.Notes > 0) then

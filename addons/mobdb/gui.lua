@@ -41,6 +41,7 @@ local TokenHelpData = {
     { Token='$speedrelative', Explanation='Entity speed, displayed in format +12.5%% -12.5%% etc.'}, 
     { Token='$debugflags', Explanation='Show all flags for debug purposes.' },
     { Token='$debugimmunity', Explanation='Show all immunity icons for debug purposes.' },
+    { Token='$direction', Explanation='Show the cardinal direction in which the target resides.' },
     { Token='$notes', Explanation='Any notes saved on the target in the database.  Multiple notes always take a new line.' }
 };
 
