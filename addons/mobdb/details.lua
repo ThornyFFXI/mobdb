@@ -162,7 +162,7 @@ local function PrintImmunities(resource)
                 if not first then
                     imgui.SameLine();
                 else
-                    imgui.TextColored(self.Header, 'Status Immunities');
+                    imgui.TextColored(details.Header, 'Status Immunities');
                     first = false;
                 end
                 DrawImage(flag.icon);
