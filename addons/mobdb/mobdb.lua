@@ -1,6 +1,6 @@
 addon.name      = 'mobdb'
 addon.author    = 'Thorny';
-addon.version   = '1.11';
+addon.version   = '1.12';
 addon.desc      = 'Displays various information about monsters.';
 addon.link      = 'https://ashitaxi.com/';
 
@@ -18,6 +18,7 @@ gTextures = require('textures');
 gTextures:Initialize();
 
 gBar = require('bar');
+gDetails = require('details');
 
 ashita.events.register('command', 'command_cb', function (e)
     local args = e.command:args();
@@ -87,7 +88,11 @@ end);
 
 
 ashita.events.register('d3d_present', 'mobdb_main_render', function()
-    gBar:Render();
+    if (gSettings.DetailView) then
+        gDetails:Render();
+    else
+        gBar:Render();
+    end
 end);
 
 

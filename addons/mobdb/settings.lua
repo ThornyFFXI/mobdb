@@ -1,26 +1,3 @@
-local function LoadCallbackFunction(self)
-    if (type(self.ExcludePack) == 'table') then
-        self.ExcludePack = T(self.ExcludePack);
-    else
-        self.ExcludePack = T{};
-    end
-    if (type(self.ExcludeUnpack) == 'table') then
-        self.ExcludeUnpack = T(self.ExcludeUnpack);
-    else
-        self.ExcludeUnpack = T{};
-    end
-    if (type(self.ForceDisableContainers) == 'table') then
-        self.ForceDisableContainers = T(self.ForceDisableContainers);
-    else
-        self.ForceDisableContainers = T{};
-    end
-    if (type(self.ForceEnableContainers) == 'table') then
-        self.ForceEnableContainers = T(self.ForceEnableContainers);
-    else
-        self.ForceEnableContainers = T{};
-    end
-end
-
 local function WriteItemArray(input, file, depth)
     local resMgr = AshitaCore:GetResourceManager();
     for _,v in ipairs(input) do
@@ -61,7 +38,9 @@ local function SaveFunction(self, characterSpecific)
         file:write('    CharacterSpecific = ' .. tostring(self.CharacterSpecific) .. ',\n');
     end
     file:write(string.format('    Scale=%f,\n', self.Scale));
+    file:write(string.format('    DetailScale=%f,\n', self.DetailScale));
     file:write(string.format('    Alpha=%f,\n', self.Alpha));
+    file:write(string.format('    DetailView=%s,\n', self.DetailView and 'true' or 'false'));
     if (self.Color) then
         file:write(string.format('    Color={%f,%f,%f,%f}\n,\n', self.Color[1], self.Color[2], self.Color[3], self.Color[4]));
     end
@@ -79,6 +58,8 @@ local defaultSettings = {
     CharacterSpecific = true,
     Scale = 1.2,
     Alpha = 0.8,
+    DetailScale = 1,
+    DetailView = false,
     Color = nil,
     MobFormat = '$name$joblevel $aggro$LB$physmagic',
     PlayerFormat = '$name$joblevel Id:$id $position1',
@@ -88,7 +69,6 @@ local defaultSettings = {
 };
 
 local settingsManager = require('settingsmanager'):New();
-settingsManager.LoadCallback = LoadCallbackFunction;
 settingsManager.Save = SaveFunction;
 settingsManager:InitializeWithGui(defaultSettings, require('gui'));
 return settingsManager;
