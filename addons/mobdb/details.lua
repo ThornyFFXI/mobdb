@@ -162,6 +162,7 @@ local function PrintImmunities(resource)
         { flag=0x400, icon='ImmuneRequiem' },
         { flag=0x800, icon='ImmuneLightSleep' },
         { flag=0x1000, icon='ImmuneDarkSleep' },
+        { flag=0x2000, icon='ImmunePetrify' }, 
     }
 
     local first = true;

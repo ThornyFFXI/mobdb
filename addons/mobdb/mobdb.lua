@@ -1,6 +1,6 @@
 addon.name      = 'mobdb'
 addon.author    = 'Thorny';
-addon.version   = '1.14';
+addon.version   = '1.15';
 addon.desc      = 'Displays various information about monsters.';
 addon.link      = 'https://ashitaxi.com/';
 
@@ -37,7 +37,10 @@ ashita.events.register('command', 'command_cb', function (e)
     end
 
     if (#args > 1) then
-        if (args[2] == 'import') then
+        if (string.lower(args[2]) == 'detail') then
+            gSettings.DetailView = not gSettings.DetailView;
+            gSettings:Save(gSettings.CharacterSpecific);
+        elseif (string.lower(args[2]) == 'import') then
             if (#args > 2) and (string.lower(args[3]) == 'lsb') then
                 local import = require('import_lsb');
                 import:BuildTables(false);
