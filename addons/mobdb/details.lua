@@ -5,6 +5,7 @@ local details = {
 };
 local entMgr = AshitaCore:GetMemoryManager():GetEntity();
 local resMgr = AshitaCore:GetResourceManager();
+local errorPrinted = T{};
 
 local function GetDirection(index)
     local myIndex = AshitaCore:GetMemoryManager():GetParty():GetMemberTargetIndex(0);
@@ -43,7 +44,7 @@ local function GetPosition(index)
         entMgr:GetLocalPositionZ(index));
 end
 
-local function GetSpeed(index)    
+local function GetSpeed(index)
     local entity = AshitaCore:GetMemoryManager():GetEntity():GetRawEntity(index);
     if entity == nil then
         return 'Unknown';
@@ -68,6 +69,14 @@ local function GetSpeed(index)
 end
 
 local function DrawImage(file)
+    local texture = gTextures.Cache[file];
+    if (texture == nil) then
+        if errorPrinted[file] == nil then
+            print(chat.header('MobDB') .. chat.error('Texture not found: ' .. file));
+            errorPrinted[file] = true;
+        end
+        return;
+    end
     imgui.Image(tonumber(ffi.cast("uint32_t", gTextures.Cache[file])), {13 * gSettings.DetailScale, 13 * gSettings.DetailScale }, { 0, 0 }, { 1, 1 }, { 1, 1, 1, 1 }, { 0, 0, 0, 0 });
     if imgui.IsItemHovered() then
         imgui.SetTooltip(file);
@@ -316,7 +325,6 @@ function details:Render()
         imgui.EndGroup();
 
         if (resource) then
-            imgui.PopStyleVar();
             local beganGroup = false;
             local drops = (resource.Drops) and (resource.Drops[1]);
             local spells = (resource.Spells) and (resource.Spells[1]);
@@ -325,7 +333,6 @@ function details:Render()
                 imgui.PushStyleVar(ImGuiStyleVar_ItemSpacing, { 8, 0 });
                 imgui.SameLine();
                 imgui.BeginGroup();
-                imgui.PopStyleVar();
             end
             
             if drops then
@@ -358,8 +365,7 @@ function details:Render()
 
             if drops or spells then
                 imgui.EndGroup();
-                --dummy push for last pop
-                imgui.PushStyleVar(ImGuiStyleVar_ItemSpacing, { 8, 0 });
+                imgui.PopStyleVar();
             end
         end
         imgui.End();
