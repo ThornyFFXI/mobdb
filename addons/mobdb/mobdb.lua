@@ -1,6 +1,6 @@
 addon.name      = 'mobdb'
 addon.author    = 'Thorny';
-addon.version   = '1.15';
+addon.version   = '1.16';
 addon.desc      = 'Displays various information about monsters.';
 addon.link      = 'https://ashitaxi.com/';
 
@@ -40,51 +40,62 @@ ashita.events.register('command', 'command_cb', function (e)
         if (string.lower(args[2]) == 'detail') then
             gSettings.DetailView = not gSettings.DetailView;
             gSettings:Save(gSettings.CharacterSpecific);
-        elseif (string.lower(args[2]) == 'import') then
-            if (#args > 2) and (string.lower(args[3]) == 'lsb') then
-                local import = require('import_lsb');
-                import:BuildTables(false);
-                import:GenerateData();
-            elseif (#args > 2) and (string.lower(args[3]) == 'wings') then
-                local import = require('import_wings');
-                import:BuildTables(true);
-                import:GenerateData();
-            elseif (#args > 2) and (string.lower(args[3]) == 'custom') then
-                local import = require('import_custom');
-                import:BuildTables(true);
-                import:GenerateData();
-            elseif (#args > 2) and (string.lower(args[3]) == 'test') then
-                local successCount = 0;
-                local totalCount = 0;
-                for index = 1,300 do
-                    local path = string.format('%sconfig/addons/mobdb/output/%u.lua', AshitaCore:GetInstallPath(), index);
-                    if ashita.fs.exists(path) then
-                        totalCount = totalCount + 1;
-                        local success, loadError = loadfile(path);
-                        if not success then
-                            print(chat.header('MobDB') .. chat.error(string.format('Failed to load resource file: %s', path)));
-                            print(chat.header('MobDB') .. chat.error(loadError));
-                            return nil;
-                        end
+            
+        elseif (string.lower(args[2]) == 'test') then
+            local successCount = 0;
+            local totalCount = 0;
+            for index = 1,300 do
+                local path = string.format('%saddons/mobdb/data/%u.lua', AshitaCore:GetInstallPath(), index);
+                if ashita.fs.exists(path) then
+                    totalCount = totalCount + 1;
+                    local success, loadError = loadfile(path);
+                    if not success then
+                        print(chat.header('MobDB') .. chat.error(string.format('Failed to load resource file: %s', path)));
+                        print(chat.header('MobDB') .. chat.error(loadError));
+                        return nil;
+                    end
 
-                        local result, output = pcall(success);
-                        if not result then
-                            print(chat.header('MobDB') .. chat.error(string.format('Failed to call resource file: %s', path)));
-                            print(chat.header('MobDB') .. chat.error(loadError));
-                            return nil;
-                        end
+                    local result, output = pcall(success);
+                    if not result then
+                        print(chat.header('MobDB') .. chat.error(string.format('Failed to call resource file: %s', path)));
+                        print(chat.header('MobDB') .. chat.error(loadError));
+                        return nil;
+                    end
 
-                        if type(output) ~= 'table' then
-                            print(chat.header('MobDB') .. chat.error(string.format('Resource file did not return a table: %s', path)));
-                        else
-                            successCount = successCount + 1;
-                        end
+                    if type(output) ~= 'table' then
+                        print(chat.header('MobDB') .. chat.error(string.format('Resource file did not return a table: %s', path)));
+                    else
+                        successCount = successCount + 1;
                     end
                 end
-                print(chat.header('MobDB') .. chat.message('File test complete.  Loaded ') .. chat.color1(2, string.format('%d/%d', successCount, totalCount)) .. chat.message(' zones successfully.'));
-            else
-                print(chat.header('MobDB') .. chat.error('Invalid syntax.  Please use ') .. chat.color1(2, '/mobdb import wings') .. chat.error(' or ') .. chat.color1(2, '/mobdb import lsb') .. chat.error(' or ') .. chat.color1(2, '/mobdb import custom') .. chat.error('.'));
             end
+
+        elseif (string.lower(args[2]) == 'import') then
+            if (#args > 2) then
+                local importer = string.format('%saddons/mobdb/import_%s.lua', AshitaCore:GetInstallPath(), args[3]);
+                if ashita.fs.exists(importer) then
+                    local success, loadError = loadfile(importer);
+                    if not success then
+                        print(chat.header('MobDB') .. chat.error(string.format('Failed to load resource file: %s', importer)));
+                        print(chat.header('MobDB') .. chat.error(loadError));
+                        return;
+                    end
+                
+                    local result, output = pcall(success);
+                    if not result then
+                        print(chat.header('MobDB') .. chat.error(string.format('Failed to call importer file: %s', importer)));
+                        print(chat.header('MobDB') .. chat.error(output));
+                        return;
+                    end
+
+                    output:BuildTables(false);
+                    output:GenerateData();
+                else
+                    print(chat.header('MobDB') .. chat.error('Failed to locate importer at: ' .. chat.color1(2, importer) .. chat.error('.')));
+                end
+                return;
+            end
+            print(chat.header('MobDB') .. chat.error('Invalid syntax.  Please use ') .. chat.color1(2, '/mobdb import [importer]') .. chat.error(' or ') .. chat.color1(2, '/mobdb import test') .. chat.error('.'));
         end
     end
 end);

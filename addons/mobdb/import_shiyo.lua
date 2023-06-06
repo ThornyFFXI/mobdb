@@ -1,5 +1,10 @@
+
 local import = {};
-local FFXIPATH = 'C:\\Ashita 4\\client\\FINAL FANTASY XI';
+local ERRORPATH = string.format('%s/addons/mobdb/data/errors.txt', AshitaCore:GetInstallPath());
+local OUTPUTPATH = string.format('%s/addons/mobdb/data', AshitaCore:GetInstallPath());
+local FFXIPATH = 'C:\\Ashita 4\\polplugins\\DATs\\Moos Server';
+local SQLPATH = 'C:\\Notepad FIles\\FFXI\\Topaz\\Moos Local\\sql';
+local CREATE_BACKUPS = true;
 local entityDatPaths = {
     [1] = 'ROM3\\2\\111.DAT',
     [2] = 'ROM3\\2\\112.DAT',
@@ -338,7 +343,7 @@ end
 import.BuildDropTable = function(self)
     local startTime = os.clock();
     self.Drops = T{};
-    local raw = io.open(string.format('%sconfig/addons/mobdb/input/mob_droplist.sql', AshitaCore:GetInstallPath()));
+    local raw = io.open(string.format('%s\\%s', SQLPATH, 'mob_droplist.sql'));
     local lines = raw:lines();
     for line in lines do
         local _,comment = string.find(line, '%-%-');
@@ -366,7 +371,7 @@ end
 import.BuildSpellTable = function(self)
     local startTime = os.clock();
     self.Spells = T{};
-    local raw = io.open(string.format('%sconfig/addons/mobdb/input/mob_spell_lists.sql', AshitaCore:GetInstallPath()));
+    local raw = io.open(string.format('%s\\%s', SQLPATH, 'mob_spell_lists.sql'));
     local lines = raw:lines();
     for line in lines do
         local _,comment = string.find(line, '%-%-');
@@ -397,7 +402,7 @@ end
 import.BuildGroupTables = function(self)
     local startTime = os.clock();
     self.Groups = T{};
-    local raw = io.open(string.format('%sconfig/addons/mobdb/input/mob_groups.sql', AshitaCore:GetInstallPath()));
+    local raw = io.open(string.format('%s\\%s', SQLPATH, 'mob_groups.sql'));
     local lines = raw:lines();
     local groupCount = 0;
     for line in lines do
@@ -439,7 +444,7 @@ end
 import.BuildPoolTable = function(self)
     local startTime = os.clock();
     self.Pools = T{};
-    local raw = io.open(string.format('%sconfig/addons/mobdb/input/mob_pools.sql', AshitaCore:GetInstallPath()));
+    local raw = io.open(string.format('%s\\%s', SQLPATH, 'mob_pools.sql'));
     local lines = raw:lines();
     for line in lines do
         local _,comment = string.find(line, '%-%-');
@@ -480,7 +485,7 @@ import.BuildFamilyTable = function(self)
     local startTime = os.clock();
     self.Families = T{};
     if (wings == true) then self.Resists = T{}; end
-    local raw = io.open(string.format('%sconfig/addons/mobdb/input/mob_family_system.sql', AshitaCore:GetInstallPath()));
+    local raw = io.open(string.format('%s\\%s', SQLPATH, 'mob_family_system.sql'));
     local lines = raw:lines();
     for line in lines do
         local _,comment = string.find(line, '%-%-');
@@ -544,7 +549,7 @@ end
 import.BuildMonsterTables = function(self)
     local startTime = os.clock();
     self.Monsters = T{};
-    local raw = io.open(string.format('%sconfig/addons/mobdb/input/mob_spawn_points.sql', AshitaCore:GetInstallPath()));
+    local raw = io.open(string.format('%s\\%s', SQLPATH, 'mob_spawn_points.sql'));
     local lines = raw:lines();
     local monsterCount = 0;
     for line in lines do
@@ -616,18 +621,24 @@ local function WriteMonster(monster, file)
         first = false;
     end
 
-    file:write('}, Modifiers={');                                    
-    local modifiers = { 'Slashing', 'Piercing', 'H2H', 'Impact', 'Fire', 'Ice', 'Wind', 'Earth', 'Lightning', 'Water', 'Light', 'Dark' };
+    file:write('}, Modifiers={');
+    local modifiers = { 'Slashing', 'Piercing', 'H2H', 'Impact', 'Fire', 'Ice', 'Wind', 'Earth', 'Lightning', 'Water', 'Light', 'Dark',
+            'Amnesia', 'Virus', 'Silence', 'Gravity', 'Stun', 'LightSleep', 'Charm', 'Paralyze', 'Bind', 'Slow', 'Petrify', 'Terror', 'Poison', 'DarkSleep', 'Blind' };
     local first = true;
     for _,mod in ipairs(modifiers) do
         if not first then
             file:write(', ');
         end
-        local text = string.gsub(string.format('%s=%f', mod, monster.Modifiers[mod]), "0+$", ""):gsub('%.$', '');
+        local output = monster.Modifiers[mod];
+        if (type(output) ~= 'number') then
+        elseif T{'Amnesia', 'Virus', 'Silence', 'Gravity', 'Stun', 'LightSleep', 'Charm', 'Paralyze', 'Bind', 'Slow', 'Petrify', 'Terror', 'Poison', 'DarkSleep', 'Blind'}:contains(mod) then
+            output = output / 100;
+        end
+        local text = string.gsub(string.format('%s=%f', mod, output), "0+$", ""):gsub('%.$', '');
         file:write(text);
         first = false;
     end
-    file:write('} },\n');
+    file:write('} },\n')
 end
 
 import.GenerateData = function(self)
@@ -636,7 +647,12 @@ import.GenerateData = function(self)
     local zoneCount = 0;
     self.ProgressCount = 0;
     self.SuccessCount = 0;
-    self.ErrorFile = io.open(string.format('%sconfig/addons/mobdb/output/errors.txt', AshitaCore:GetInstallPath()), 'w');
+    self.ErrorFile = io.open(ERRORPATH, 'w');
+    local backupFolder = string.format('%s/%s/', OUTPUTPATH, os.date("%Y.%m.%d_%H.%M.%S"));
+    if CREATE_BACKUPS then
+        ashita.fs.create_directory(backupFolder);
+    end
+
     for zoneId,mobs in pairs(self.Monsters) do
         self.ActiveGroups = self.Groups[zoneId];
         self.ActiveMobs = mobs;
@@ -658,8 +674,17 @@ import.GenerateData = function(self)
                 sortedNames:append(monster);
             end
             table.sort(sortedNames, function(a,b) return a.Name < b.Name end);
+            
+            local destinationFile = string.format('%s/%u.lua', OUTPUTPATH, zoneId);
 
-            local output = io.open(string.format('%sconfig/addons/mobdb/output/%u.lua', AshitaCore:GetInstallPath(), zoneId), 'w');
+            if CREATE_BACKUPS then
+                local backupFile = string.format('%s%u.lua', backupFolder, zoneId);
+                if ashita.fs.exists(destinationFile) and not ashita.fs.exists(backupFile) then
+                    ashita.fs.rename(destinationFile, backupFile);
+                end
+            end
+
+            local output = io.open(destinationFile, 'w');
             if (output) then            
                 output:write(string.format('--Zone: %s\n', AshitaCore:GetResourceManager():GetString(gCompatibility.Resource.Zone, zoneId)));
                 output:write(string.format('--Zone ID: %u\n', zoneId));
