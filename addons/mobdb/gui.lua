@@ -62,11 +62,10 @@ end
 
 function SettingsGui:Render()
     if (self.TokenEditor.IsOpen[1]) then
-        imgui.SetNextWindowSize({ 540, 235, });
-        if (imgui.Begin('MobDB Token Editor', self.TokenEditor.IsOpen, ImGuiWindowFlags_NoResize)) then
+        if (imgui.Begin('MobDB Token Editor', self.TokenEditor.IsOpen, ImGuiWindowFlags_AlwaysAutoResize)) then
             for _,category in ipairs(self.TokenEditor.Categories) do
                 imgui.TextColored(self.Theme.Header, string.format('%s Targeted', category));
-                imgui.PushItemWidth(-1);
+                imgui.PushItemWidth(400);
                 if imgui.InputText('##Token_' .. category, self.TokenEditor.Strings[category], 1080) then
                    self.Parent[category .. 'Format'] = self.TokenEditor.Strings[category][1];
                    gBar:ParseFormats(category .. 'Format'); 
@@ -94,9 +93,7 @@ function SettingsGui:Render()
     else
         self.TokenHelper.IsOpen[1] = false;
         if (self.IsOpen[1]) then
-            imgui.SetNextWindowContentSize({ 223, 282 });
             if (imgui.Begin(string.format('%s v%s', addon.name, addon.version), self.IsOpen, ImGuiWindowFlags_AlwaysAutoResize)) then
-                imgui.BeginGroup();
                 imgui.TextColored(self.Theme.Header, 'Save Mode');
                 if imgui.Checkbox('Character-Specific', { self.Parent.CharacterSpecific }) then
                     self.Parent:ToggleCharacterSpecific();
@@ -135,7 +132,6 @@ function SettingsGui:Render()
                 if (imgui.Button('Edit Tokens')) then
                     self.TokenEditor.IsOpen[1] = true;
                 end
-                imgui.EndGroup();
                 imgui.End();
             end
         end
