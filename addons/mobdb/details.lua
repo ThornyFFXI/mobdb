@@ -57,9 +57,17 @@ local function GetSpeed(index)
         end
 
         if (relative < 0) then
-            relative = string.format('-%.2d%%%%', math.floor((1 - relative) * 100));
+            if (ashita.addons_version < 2.2) then
+                relative = string.format('-%.2d%%%%', math.floor((1 - relative) * 100));
+            else
+                relative = string.format('-%.2d%%', math.floor((1 - relative) * 100));
+            end
         elseif (relative > 0) then
-            relative = string.format('+%.2d%%%%', math.floor((relative - 1) * 100));
+            if (ashita.addons_version < 2.2) then
+                relative = string.format('+%.2d%%%%', math.floor((relative - 1) * 100));
+            else
+                relative = string.format('+%.2d%%', math.floor((relative - 1) * 100));
+            end
         else
             relative = '+0%';
         end
@@ -98,9 +106,17 @@ local function PrintMods(mods)
         if (index == #mods) or (mods[index+1].Potency ~= mod.Potency) then
             local outstring = '';
             if (mod.Potency > 1) then
-                outstring = outstring .. '+' .. string.format('%.2f', ((mod.Potency - 1) * 100)):gsub('0+$', ''):gsub('%.$', '') .. '%%';
+                if (ashita.addons_version < 2.2) then
+                    outstring = outstring .. '+' .. string.format('%.2f', ((mod.Potency - 1) * 100)):gsub('0+$', ''):gsub('%.$', '') .. '%%';
+                else
+                    outstring = outstring .. '+' .. string.format('%.2f', ((mod.Potency - 1) * 100)):gsub('0+$', ''):gsub('%.$', '') .. '%';
+                end
             else
-                outstring = outstring .. '-' .. string.format('%.2f', ((1 - mod.Potency) * 100)):gsub('0+$', ''):gsub('%.$', '') .. '%%';
+                if (ashita.addons_version < 2.2) then
+                    outstring = outstring .. '-' .. string.format('%.2f', ((1 - mod.Potency) * 100)):gsub('0+$', ''):gsub('%.$', '') .. '%%';
+                else
+                    outstring = outstring .. '-' .. string.format('%.2f', ((1 - mod.Potency) * 100)):gsub('0+$', ''):gsub('%.$', '') .. '%';
+                end
             end
 
             local lastLine = (index == #mods);

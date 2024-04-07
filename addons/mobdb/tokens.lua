@@ -9,7 +9,8 @@ gTokenState = {
     LineBreak = false,
     DrawImage = function(this, fileName)
         this:ProcessSameLines();
-        imgui.Image(tonumber(ffi.cast("uint32_t", gTextures.Cache[fileName])), {13 * gSettings.Scale, 13 * gSettings.Scale }, { 0, 0 }, { 1, 1 }, { 1, 1, 1, 1 }, { 0, 0, 0, 0 });
+        imgui.Image(tonumber(ffi.cast("uint32_t", gTextures.Cache[fileName])),
+            { 13 * gSettings.Scale, 13 * gSettings.Scale }, { 0, 0 }, { 1, 1 }, { 1, 1, 1, 1 }, { 0, 0, 0, 0 });
         if imgui.IsItemHovered() then
             imgui.SetTooltip(fileName);
         end
@@ -39,23 +40,23 @@ gTokenState = {
 
 local function PrintAllImmunities()
     local flags = {
-        { flag=0x01, icon='ImmuneSleep' },
-        { flag=0x02, icon='ImmuneGravity' },
-        { flag=0x04, icon='ImmuneBind' },
-        { flag=0x08, icon='ImmuneStun' },
-        { flag=0x10, icon='ImmuneSilence' },
-        { flag=0x20, icon='ImmuneParalyze' },
-        { flag=0x40, icon='ImmuneBlind' },
-        { flag=0x80, icon='ImmuneSlow' },
-        { flag=0x100, icon='ImmunePoison' },
-        { flag=0x200, icon='ImmuneElegy' },
-        { flag=0x400, icon='ImmuneRequiem' },
-        { flag=0x800, icon='ImmuneLightSleep' },
-        { flag=0x1000, icon='ImmuneDarkSleep' },
-        { flag=0x2000, icon='ImmunePetrify' },
+        { flag = 0x01, icon = 'ImmuneSleep' },
+        { flag = 0x02, icon = 'ImmuneGravity' },
+        { flag = 0x04, icon = 'ImmuneBind' },
+        { flag = 0x08, icon = 'ImmuneStun' },
+        { flag = 0x10, icon = 'ImmuneSilence' },
+        { flag = 0x20, icon = 'ImmuneParalyze' },
+        { flag = 0x40, icon = 'ImmuneBlind' },
+        { flag = 0x80, icon = 'ImmuneSlow' },
+        { flag = 0x100, icon = 'ImmunePoison' },
+        { flag = 0x200, icon = 'ImmuneElegy' },
+        { flag = 0x400, icon = 'ImmuneRequiem' },
+        { flag = 0x800, icon = 'ImmuneLightSleep' },
+        { flag = 0x1000, icon = 'ImmuneDarkSleep' },
+        { flag = 0x2000, icon = 'ImmunePetrify' },
     }
 
-    for _,flag in ipairs(flags) do
+    for _, flag in ipairs(flags) do
         if (gTextures.Cache[flag.icon] ~= nil) then
             gTokenState:DrawImage(flag.icon);
         end
@@ -64,23 +65,23 @@ end
 
 local function PrintImmunities(resource)
     local flags = {
-        { flag=0x01, icon='ImmuneSleep' },
-        { flag=0x02, icon='ImmuneGravity' },
-        { flag=0x04, icon='ImmuneBind' },
-        { flag=0x08, icon='ImmuneStun' },
-        { flag=0x10, icon='ImmuneSilence' },
-        { flag=0x20, icon='ImmuneParalyze' },
-        { flag=0x40, icon='ImmuneBlind' },
-        { flag=0x80, icon='ImmuneSlow' },
-        { flag=0x100, icon='ImmunePoison' },
-        { flag=0x200, icon='ImmuneElegy' },
-        { flag=0x400, icon='ImmuneRequiem' },
-        { flag=0x800, icon='ImmuneLightSleep' },
-        { flag=0x1000, icon='ImmuneDarkSleep' },
-        { flag=0x2000, icon='ImmunePetrify' },
+        { flag = 0x01, icon = 'ImmuneSleep' },
+        { flag = 0x02, icon = 'ImmuneGravity' },
+        { flag = 0x04, icon = 'ImmuneBind' },
+        { flag = 0x08, icon = 'ImmuneStun' },
+        { flag = 0x10, icon = 'ImmuneSilence' },
+        { flag = 0x20, icon = 'ImmuneParalyze' },
+        { flag = 0x40, icon = 'ImmuneBlind' },
+        { flag = 0x80, icon = 'ImmuneSlow' },
+        { flag = 0x100, icon = 'ImmunePoison' },
+        { flag = 0x200, icon = 'ImmuneElegy' },
+        { flag = 0x400, icon = 'ImmuneRequiem' },
+        { flag = 0x800, icon = 'ImmuneLightSleep' },
+        { flag = 0x1000, icon = 'ImmuneDarkSleep' },
+        { flag = 0x2000, icon = 'ImmunePetrify' },
     }
 
-    for _,flag in ipairs(flags) do
+    for _, flag in ipairs(flags) do
         if (bit.band(resource.Immunities, flag.flag) ~= 0) then
             if (gTextures.Cache[flag.icon] ~= nil) then
                 gTokenState:DrawImage(flag.icon);
@@ -90,17 +91,25 @@ local function PrintImmunities(resource)
 end
 
 local function PrintMods(mods)
-    for index,mod in ipairs(mods) do
+    for index, mod in ipairs(mods) do
         if (gTextures.Cache[mod.Type] ~= nil) then
             gTokenState:DrawImage(mod.Type);
         end
 
-        if (index == #mods) or (mods[index+1].Potency ~= mod.Potency) then
+        if (index == #mods) or (mods[index + 1].Potency ~= mod.Potency) then
             local outstring = '';
             if (mod.Potency > 1) then
-                outstring = outstring .. '+' .. string.format('%.2f', ((mod.Potency - 1) * 100)):gsub('0+$', ''):gsub('%.$', '') .. '%%';
+                outstring = outstring ..
+                '+' .. string.format('%.2f', ((mod.Potency - 1) * 100)):gsub('0+$', ''):gsub('%.$', '') .. '%';
+                if (ashita.addons_version < 2.2) then
+                    outstring = outstring .. '%';
+                end
             else
-                outstring = outstring .. '-' .. string.format('%.2f', ((1 - mod.Potency) * 100)):gsub('0+$', ''):gsub('%.$', '') .. '%%';
+                outstring = outstring ..
+                '-' .. string.format('%.2f', ((1 - mod.Potency) * 100)):gsub('0+$', ''):gsub('%.$', '') .. '%';
+                if (ashita.addons_version < 2.2) then
+                    outstring = outstring .. '%';
+                end
             end
 
             local lastLine = (index == #mods);
@@ -138,7 +147,7 @@ local function PrintFlags(resource)
         'Blood',
     };
 
-    for _,flag in ipairs(flags) do
+    for _, flag in ipairs(flags) do
         if (resource[flag] == true) and (gTextures.Cache[flag] ~= nil) then
             gTokenState:DrawImage(flag);
         end
@@ -157,9 +166,9 @@ local function PrintDebugFlags()
         'Scent',
         'Magic',
         'JA',
-        'Blood',        
+        'Blood',
     };
-    for index,flag in ipairs(flags) do
+    for index, flag in ipairs(flags) do
         if (gTextures.Cache[flag] ~= nil) then
             gTokenState:DrawImage(flag);
         end
@@ -178,7 +187,7 @@ local function PrintDebugFlags()
         'Light',
         'Dark'
     };
-    for index,flag in ipairs(flags) do
+    for index, flag in ipairs(flags) do
         if (gTextures.Cache[flag] ~= nil) then
             gTokenState:DrawImage(flag);
         end
@@ -221,22 +230,25 @@ return {
         if resource and resource.Job > 0 then
             local output = resMgr:GetString(gCompatibility.Resource.Jobs, resource.Job);
             if (resource.SubJob ~= nil) and (resource.SubJob > 0) then
-                output = output .. '/' .. resMgr:GetString(gCompatibility.Resource.Jobs, resource.SubJob);                    
+                output = output .. '/' .. resMgr:GetString(gCompatibility.Resource.Jobs, resource.SubJob);
             end
             gTokenState:DrawText(output);
         elseif (mob > 0x3FF) and (mob < 0x700) then
             if (mob == AshitaCore:GetMemoryManager():GetParty():GetMemberTargetIndex(0)) then
                 local mainJob = playMgr:GetMainJob();
                 local subJob = playMgr:GetSubJob();
-                gTokenState:DrawText(string.format('%s/%s', resMgr:GetString(gCompatibility.Resource.Jobs, mainJob), resMgr:GetString(gCompatibility.Resource.Jobs, subJob)));
+                gTokenState:DrawText(string.format('%s/%s', resMgr:GetString(gCompatibility.Resource.Jobs, mainJob),
+                    resMgr:GetString(gCompatibility.Resource.Jobs, subJob)));
             else
-                for i = 1,17 do
+                for i = 1, 17 do
                     if partyMgr:GetMemberZone(i) == partyMgr:GetMemberZone(0) then
                         if partyMgr:GetMemberTargetIndex(i) == mob then
                             local mainJob = partyMgr:GetMemberMainJob(i);
                             local subJob = partyMgr:GetMemberSubJob(i);
                             if ((mainJob ~= 0) or (subJob ~= 0)) then
-                                gTokenState:DrawText(string.format('%s/%s', resMgr:GetString(gCompatibility.Resource.Jobs, mainJob), resMgr:GetString(gCompatibility.Resource.Jobs, subJob)));
+                                gTokenState:DrawText(string.format('%s/%s',
+                                    resMgr:GetString(gCompatibility.Resource.Jobs, mainJob),
+                                    resMgr:GetString(gCompatibility.Resource.Jobs, subJob)));
                             end
                             break;
                         end
@@ -259,7 +271,7 @@ return {
             if (mob == AshitaCore:GetMemoryManager():GetParty():GetMemberTargetIndex(0)) then
                 gTokenState:DrawText(tostring(playMgr:GetMainJobLevel()));
             else
-                for i = 1,17 do
+                for i = 1, 17 do
                     if partyMgr:GetMemberZone(i) == partyMgr:GetMemberZone(0) then
                         if partyMgr:GetMemberTargetIndex(i) == mob then
                             local level = partyMgr:GetMemberMainJobLevel(i);
@@ -282,7 +294,7 @@ return {
             if (resource.Job > 0) then
                 output = output .. ' ' .. resMgr:GetString(gCompatibility.Resource.Jobs, resource.Job);
                 if (resource.SubJob ~= nil) and (resource.SubJob > 0) then
-                    output = output .. '/' .. resMgr:GetString(gCompatibility.Resource.Jobs, resource.SubJob);                    
+                    output = output .. '/' .. resMgr:GetString(gCompatibility.Resource.Jobs, resource.SubJob);
                 end
             end
             output = output .. ']';
@@ -296,7 +308,7 @@ return {
                     playMgr:GetSubJobLevel());
                 gTokenState:DrawText(output);
             else
-                for i = 1,17 do
+                for i = 1, 17 do
                     if partyMgr:GetMemberZone(i) == partyMgr:GetMemberZone(0) then
                         if partyMgr:GetMemberTargetIndex(i) == mob then
                             local level = partyMgr:GetMemberMainJobLevel(i);
@@ -341,13 +353,13 @@ return {
     end,
     ['$strength'] = function(mob, resource)
         if resource then
-            local mods = T{};
-            for name,potency in pairs(resource.Modifiers) do
-                if not T{'Amnesia', 'Virus', 'Silence', 'Gravity', 'Stun', 'LightSleep', 'Charm', 'Paralyze', 'Bind', 'Slow', 'Petrify', 'Terror', 'Poison', 'DarkSleep', 'Blind'}:contains(name) then
+            local mods = T {};
+            for name, potency in pairs(resource.Modifiers) do
+                if not T { 'Amnesia', 'Virus', 'Silence', 'Gravity', 'Stun', 'LightSleep', 'Charm', 'Paralyze', 'Bind', 'Slow', 'Petrify', 'Terror', 'Poison', 'DarkSleep', 'Blind' }:contains(name) then
                     if (potency < 1.0) then
-                        mods:append({ Type=name, Potency=potency });
+                        mods:append({ Type = name, Potency = potency });
                     end
-                    table.sort(mods, function(a,b)
+                    table.sort(mods, function(a, b)
                         return (a.Potency < b.Potency);
                     end);
                 end
@@ -359,13 +371,13 @@ return {
     end,
     ['$weakness'] = function(mob, resource)
         if resource then
-            local mods = T{};
-            for name,potency in pairs(resource.Modifiers) do
-                if not T{'Amnesia', 'Virus', 'Silence', 'Gravity', 'Stun', 'LightSleep', 'Charm', 'Paralyze', 'Bind', 'Slow', 'Petrify', 'Terror', 'Poison', 'DarkSleep', 'Blind'}:contains(name) then
+            local mods = T {};
+            for name, potency in pairs(resource.Modifiers) do
+                if not T { 'Amnesia', 'Virus', 'Silence', 'Gravity', 'Stun', 'LightSleep', 'Charm', 'Paralyze', 'Bind', 'Slow', 'Petrify', 'Terror', 'Poison', 'DarkSleep', 'Blind' }:contains(name) then
                     if (potency > 1.0) then
-                        mods:append({ Type=name, Potency=potency });
+                        mods:append({ Type = name, Potency = potency });
                     end
-                    table.sort(mods, function(a,b)
+                    table.sort(mods, function(a, b)
                         return (a.Potency > b.Potency);
                     end);
                 end
@@ -377,12 +389,12 @@ return {
     end,
     ['$physical'] = function(mob, resource)
         if resource then
-            local mods = T{};
-            for name,potency in pairs(resource.Modifiers) do
-                if (potency ~= 1.0) and T{'H2H', 'Impact', 'Piercing', 'Slashing'}:contains(name) then
-                    mods:append({ Type=name, Potency=potency });
+            local mods = T {};
+            for name, potency in pairs(resource.Modifiers) do
+                if (potency ~= 1.0) and T { 'H2H', 'Impact', 'Piercing', 'Slashing' }:contains(name) then
+                    mods:append({ Type = name, Potency = potency });
                 end
-                table.sort(mods, function(a,b)
+                table.sort(mods, function(a, b)
                     return (a.Potency > b.Potency);
                 end);
             end
@@ -393,12 +405,12 @@ return {
     end,
     ['$magical'] = function(mob, resource)
         if resource then
-            local mods = T{};
-            for name,potency in pairs(resource.Modifiers) do
-                if (potency ~= 1.0) and (T{'Fire', 'Ice', 'Wind', 'Earth', 'Lightning', 'Water', 'Light', 'Dark'}:contains(name)) then
-                    mods:append({ Type=name, Potency=potency });
+            local mods = T {};
+            for name, potency in pairs(resource.Modifiers) do
+                if (potency ~= 1.0) and (T { 'Fire', 'Ice', 'Wind', 'Earth', 'Lightning', 'Water', 'Light', 'Dark' }:contains(name)) then
+                    mods:append({ Type = name, Potency = potency });
                 end
-                table.sort(mods, function(a,b)
+                table.sort(mods, function(a, b)
                     return (a.Potency > b.Potency);
                 end);
             end
@@ -410,27 +422,27 @@ return {
     ['$physmagic'] = function(mob, resource)
         local foundPhysical = false;
         if resource then
-            local mods = T{};
-            for name,potency in pairs(resource.Modifiers) do
-                if (potency ~= 1.0) and T{'H2H', 'Impact', 'Piercing', 'Slashing'}:contains(name) then
-                    mods:append({ Type=name, Potency=potency });
+            local mods = T {};
+            for name, potency in pairs(resource.Modifiers) do
+                if (potency ~= 1.0) and T { 'H2H', 'Impact', 'Piercing', 'Slashing' }:contains(name) then
+                    mods:append({ Type = name, Potency = potency });
                 end
-                table.sort(mods, function(a,b)
+                table.sort(mods, function(a, b)
                     return (a.Potency > b.Potency);
                 end);
             end
-            
+
             if (#mods > 0) then
                 PrintMods(mods);
                 foundPhysical = true;
             end
 
-            mods = T{};
-            for name,potency in pairs(resource.Modifiers) do
-                if (potency ~= 1.0) and (T{'Fire', 'Ice', 'Wind', 'Earth', 'Lightning', 'Water', 'Light', 'Dark'}:contains(name)) then
-                    mods:append({ Type=name, Potency=potency });
+            mods = T {};
+            for name, potency in pairs(resource.Modifiers) do
+                if (potency ~= 1.0) and (T { 'Fire', 'Ice', 'Wind', 'Earth', 'Lightning', 'Water', 'Light', 'Dark' }:contains(name)) then
+                    mods:append({ Type = name, Potency = potency });
                 end
-                table.sort(mods, function(a,b)
+                table.sort(mods, function(a, b)
                     return (a.Potency > b.Potency);
                 end);
             end
@@ -454,7 +466,7 @@ return {
         PrintDebugFlags();
     end,
     ['$spawncount'] = function(mob)
-        
+
     end,
     ['$immunity'] = function(mob, resource)
         if resource then
@@ -466,16 +478,16 @@ return {
     end,
     ['$statusresist'] = function(mob, resource)
         if resource then
-            local mods = T{};
-            for name,potency in pairs(resource.Modifiers) do
-                if (potency ~= 1) and T{'Amnesia', 'Virus', 'Silence', 'Gravity', 'Stun', 'LightSleep', 'Charm', 'Paralyze', 'Bind', 'Slow', 'Petrify', 'Terror', 'Poison', 'DarkSleep', 'Blind'}:contains(name) then
-                    mods:append({ Type='Immune' .. name, Potency=potency });
+            local mods = T {};
+            for name, potency in pairs(resource.Modifiers) do
+                if (potency ~= 1) and T { 'Amnesia', 'Virus', 'Silence', 'Gravity', 'Stun', 'LightSleep', 'Charm', 'Paralyze', 'Bind', 'Slow', 'Petrify', 'Terror', 'Poison', 'DarkSleep', 'Blind' }:contains(name) then
+                    mods:append({ Type = 'Immune' .. name, Potency = potency });
                 end
-                table.sort(mods, function(a,b)
+                table.sort(mods, function(a, b)
                     return (a.Potency > b.Potency);
                 end);
             end
-            
+
             if (#mods > 0) then
                 PrintMods(mods);
             end
@@ -491,32 +503,56 @@ return {
     ['$speed'] = function(mob)
         local entity = AshitaCore:GetMemoryManager():GetEntity():GetRawEntity(mob);
         if entity == nil then
-            gTokenState:DrawText('??%%');
+            if (ashita.addons_version < 2.2) then
+                gTokenState:DrawText('??%%');
+            else
+                gTokenState:DrawText('??%');
+            end
         else
             local speed = AshitaCore:GetMemoryManager():GetEntity():GetAnimationSpeed(mob) / 4;
             if (mob > 0x3FF) and (mob < 0x700) then
                 speed = AshitaCore:GetMemoryManager():GetEntity():GetMovementSpeed(mob) / 5;
             end
-            gTokenState:DrawText(string.format('%.2d%%%%', speed * 100));
+            if (ashita.addons_version < 2.2) then
+                gTokenState:DrawText(string.format('%.2d%%%%', speed * 100));
+            else
+                gTokenState:DrawText(string.format('%.2d%%', speed * 100));
+            end
         end
     end,
     ['$speedrelative'] = function(mob)
         local entity = AshitaCore:GetMemoryManager():GetEntity():GetRawEntity(mob);
         if entity == nil then
-            gTokenState:DrawText('??%%');
+            if (ashita.addons_version < 2.2) then
+                gTokenState:DrawText('??%%');
+            else
+                gTokenState:DrawText('??%');
+            end
         else
             local speed = AshitaCore:GetMemoryManager():GetEntity():GetAnimationSpeed(mob) / 4;
             if (mob > 0x3FF) and (mob < 0x700) then
                 speed = AshitaCore:GetMemoryManager():GetEntity():GetMovementSpeed(mob) / 5;
             end
             if (speed == 1) then
-                gTokenState:DrawText('+0%%');
+                if (ashita.addons_version < 2.2) then
+                    gTokenState:DrawText('+0%%');
+                else
+                    gTokenState:DrawText('+0%');
+                end
             elseif (speed < 1) then
                 local speedDrop = math.floor((1 - speed) * 100);
-                gTokenState:DrawText(string.format('-%.2d%%%%', speedDrop));
+                if (ashita.addons_version < 2.2) then
+                    gTokenState:DrawText(string.format('-%.2d%%%%', speedDrop));
+                else
+                    gTokenState:DrawText(string.format('-%.2d%%', speedDrop));
+                end
             else
                 local speedGain = math.floor((speed - 1) * 100);
-                gTokenState:DrawText(string.format('+%.2d%%%%', speedGain));
+                if (ashita.addons_version < 2.2) then
+                    gTokenState:DrawText(string.format('+%.2d%%%%', speedGain));
+                else
+                    gTokenState:DrawText(string.format('+%.2d%%', speedGain));
+                end
             end
         end
     end,
@@ -526,7 +562,7 @@ return {
             return;
         end
 
-        local myIndex = AshitaCore:GetMemoryManager():GetParty():GetMemberTargetIndex(0); 
+        local myIndex = AshitaCore:GetMemoryManager():GetParty():GetMemberTargetIndex(0);
         local myPosition = {
             X = AshitaCore:GetMemoryManager():GetEntity():GetLocalPositionX(myIndex),
             Y = AshitaCore:GetMemoryManager():GetEntity():GetLocalPositionY(myIndex),
@@ -561,7 +597,7 @@ return {
     ['$notes'] = function(mob, resource)
         if resource then
             if (resource.Notes) and (#resource.Notes > 0) then
-                for _,note in ipairs(resource.Notes) do
+                for _, note in ipairs(resource.Notes) do
                     gTokenState:DrawText(note);
                 end
             end

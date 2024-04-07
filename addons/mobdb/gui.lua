@@ -14,6 +14,13 @@ local SettingsGui = {
     }
 };
 
+local speedExplanation = 'Entity speed, displayed in format 100% 125% etc.';
+local speedRelativeExplanation = 'Entity speed, displayed in format +12.5% -12.5% etc.'
+if (ashita.addons_version < 2.2) then
+    speedExplanation = 'Entity speed, displayed in format 100%% 125%% etc.';
+    speedRelativeExplanation = 'Entity speed, displayed in format +12.5%% -12.5%% etc.'
+end
+
 local TokenHelpData = {
     { Token='$name', Explanation='The name of your current target.'},
     { Token='$index', Explanation='The zone-specific index of your current target.'},
@@ -37,8 +44,8 @@ local TokenHelpData = {
     { Token='$hpp', Explanation='The target\'s current HP percentage.'},
     { Token='$dynamic', Explanation='Dynamic if the monster is a custom spawn, Static if it is a normal spawn.'},
     { Token='$aggro', Explanation='Graphical display indicating whether the target aggros, links, is a NM, and how it detects you.'},
-    { Token='$speed', Explanation='Entity speed, displayed in format 100%% 125%% etc.'},
-    { Token='$speedrelative', Explanation='Entity speed, displayed in format +12.5%% -12.5%% etc.'}, 
+    { Token='$speed', Explanation=speedExplanation},
+    { Token='$speedrelative', Explanation=speedRelativeExplanation}, 
     { Token='$debugflags', Explanation='Show all flags for debug purposes.' },
     { Token='$debugimmunity', Explanation='Show all immunity icons for debug purposes.' },
     { Token='$direction', Explanation='Show the cardinal direction in which the target resides.' },
