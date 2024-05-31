@@ -594,6 +594,40 @@ return {
             gTokenState:DrawText('South');
         end
     end,
+    ['$drops'] = function(mob, resource)
+        if not resource then
+            return;
+        end
+
+        local drops = (resource.Drops) and (resource.Drops[1]);
+        if drops then
+            local dropNames = T{};
+            for _,item in ipairs(resource.Drops) do
+                dropNames:append(resMgr:GetItemById(item).Name[1]);
+            end
+            table.sort(dropNames);
+            local dropText = table.concat(dropNames, ',');
+            gTokenState:DrawText(dropText);
+        end
+    end,
+    ['$dropssplit'] = function(mob, resource)
+        if not resource then
+            return;
+        end
+
+        local drops = (resource.Drops) and (resource.Drops[1]);
+        if drops then
+            local dropNames = T{};
+            for _,item in ipairs(resource.Drops) do
+                dropNames:append(resMgr:GetItemById(item).Name[1]);
+            end
+            table.sort(dropNames);
+            gTokenState:ProcessSameLines();
+            for _,drop in ipairs(dropNames) do
+                imgui.Text(drop);
+            end
+        end
+    end,
     ['$notes'] = function(mob, resource)
         if resource then
             if (resource.Notes) and (#resource.Notes > 0) then

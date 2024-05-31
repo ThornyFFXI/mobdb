@@ -49,6 +49,8 @@ local TokenHelpData = {
     { Token='$debugflags', Explanation='Show all flags for debug purposes.' },
     { Token='$debugimmunity', Explanation='Show all immunity icons for debug purposes.' },
     { Token='$direction', Explanation='Show the cardinal direction in which the target resides.' },
+    { Token='$drops', Explanation='Show target drops as a comma-seperated line.' },
+    { Token='$dropssplit', Explanation='Show target drops with each drop on a new line.' },
     { Token='$notes', Explanation='Any notes saved on the target in the database.  Multiple notes always take a new line.' }
 };
 
