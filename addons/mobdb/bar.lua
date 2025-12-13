@@ -113,7 +113,7 @@ bar.Render = function(self)
         end
         imgui.SetNextWindowBgAlpha(gSettings.Alpha);
         if imgui.Begin('mobdb_infobar', self.State.IsOpen, bit.bor(ImGuiWindowFlags_NoDecoration, ImGuiWindowFlags_AlwaysAutoResize)) then
-            imgui.SetWindowFontScale(gSettings.Scale);
+            imgui.PushFont(nil, 12 * gSettings.Scale);
             gTokenState.FirstElement = true;
             gTokenState.LineBreak = false;
             for index,currentObject in ipairs(renderTable) do
@@ -128,6 +128,7 @@ bar.Render = function(self)
                     end
                 end
             end
+            imgui.PopFont();
             imgui.End();
         end
         if pushColor then
