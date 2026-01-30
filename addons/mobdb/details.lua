@@ -235,7 +235,7 @@ function details:Render()
 
     imgui.PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0, 0 });
     if (imgui.Begin(string.format('%s v%s##MobDB Detail View', addon.name, addon.version), { true }, ImGuiWindowFlags_AlwaysAutoResize)) then
-        imgui.SetWindowFontScale(gSettings.DetailScale);
+        imgui.PushFont(nil, 12 * gSettings.Scale);
         imgui.BeginGroup();
         imgui.TextColored(self.Header, 'Name:');
         imgui.SameLine();
@@ -385,6 +385,7 @@ function details:Render()
                 imgui.PopStyleVar();
             end
         end
+        imgui.PopFont();
         imgui.End();
     end
     imgui.PopStyleVar();
