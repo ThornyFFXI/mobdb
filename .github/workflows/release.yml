@@ -1,0 +1,50 @@
+name: Release addon zip
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Stage into addons/<repo>
+        run: |
+          set -euo pipefail
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"   # owner/repo -> repo
+
+          mkdir -p "dist/addons/${REPO_NAME}"
+          
+          rsync -a --delete \
+            --exclude ".git/" \
+            --exclude ".github/" \
+            --exclude "dist/" \
+            ./ "dist/addons/${REPO_NAME}/"
+
+          echo "Staged contents:"
+          ls -la "dist/addons/${REPO_NAME}"
+
+      - name: Zip it
+        run: |
+          set -euo pipefail
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          cd dist
+          ZIP_NAME="${REPO_NAME}-${GITHUB_REF_NAME}.zip"
+          zip -r "${ZIP_NAME}" "addons/${REPO_NAME}"
+          echo "ZIP_NAME=${ZIP_NAME}" >> "$GITHUB_ENV"
+
+      - name: Create/Update GitHub Release and upload asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/${{ env.ZIP_NAME }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
