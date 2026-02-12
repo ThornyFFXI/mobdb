@@ -1,6 +1,6 @@
 addon.name      = 'mobdb'
 addon.author    = 'Thorny';
-addon.version   = '1.21';
+addon.version   = '1.22';
 addon.desc      = 'Displays various information about monsters.';
 addon.link      = 'https://ashitaxi.com/';
 
@@ -113,6 +113,7 @@ end);
 ashita.events.register('packet_in', 'mobdb_zone_change_check', function(e)
     if e.id == 0x00A then
         local zone = struct.unpack('H', e.data, 0x30 + 1);
-        gData:Load(zone);
+        local subZone = struct.unpack('H', e.data, 0x9E + 1);
+        gData:Load(zone, subZone);
     end
 end);
