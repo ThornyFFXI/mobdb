@@ -129,8 +129,8 @@ bar.Render = function(self)
                 end
             end
             imgui.PopFont();
-            imgui.End();
         end
+        imgui.End();
         if pushColor then
             imgui.PopStyleColor();
         end
