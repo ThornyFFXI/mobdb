@@ -386,8 +386,8 @@ function details:Render()
             end
         end
         imgui.PopFont();
-        imgui.End();
     end
+    imgui.End();
     imgui.PopStyleVar();
 end
 
