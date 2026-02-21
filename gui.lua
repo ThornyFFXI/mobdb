@@ -85,8 +85,8 @@ function SettingsGui:Render()
             if (imgui.Button('Help')) then
                 self.TokenHelper.IsOpen[1] = true;
             end
-            imgui.End();
         end
+        imgui.End();
 
         if (self.TokenHelper.IsOpen[1]) then
             imgui.SetNextWindowSize({ 610, 597, });
@@ -95,9 +95,8 @@ function SettingsGui:Render()
                     imgui.TextColored(self.Theme.Header, entry.Token);
                     imgui.TextWrapped('  ' .. entry.Explanation);                    
                 end
-                imgui.End();
             end
-            
+            imgui.End(); 
         end
     else
         self.TokenHelper.IsOpen[1] = false;
@@ -141,8 +140,8 @@ function SettingsGui:Render()
                 if (imgui.Button('Edit Tokens')) then
                     self.TokenEditor.IsOpen[1] = true;
                 end
-                imgui.End();
             end
+            imgui.End();
         end
     end
 end
