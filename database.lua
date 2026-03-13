@@ -47,11 +47,20 @@ database.Load = function(self, zone, subZone)
 end
 
 do
-    local ptr = ashita.memory.find('FFXiMain.dll', 0, '8B0D????????85C974??8B44240450E8????????C383C8FFC3', 2, 0)
-    ptr = ashita.memory.read_uint32(ptr) + 0xF78;
-    ptr = ashita.memory.read_uint32(ptr)
-    local subZone = ashita.memory.read_uint16(ptr + 0x200);
-    database:Load(AshitaCore:GetMemoryManager():GetParty():GetMemberZone(0), subZone);
+    local playerIndex = AshitaCore:GetMemoryManager():GetParty():GetMemberTargetIndex(0);
+    if playerIndex ~= 0 then
+        --Initialize zone/subzone. Credit to atom0s for locating signature and offsets.
+        local zonePointer = ashita.memory.find(0, 0, 'A1????????668B88????????668B90????????5152E8????????A3', 0x00, 0x00);
+        local offset1 = ashita.memory.read_uint32(zonePointer + 0x08);
+        local offset2 = ashita.memory.read_uint32(zonePointer + 0x0F);
+        local pointer = ashita.memory.read_uint32(zonePointer + 0x01);
+        if (pointer ~= 0) then
+            pointer = ashita.memory.read_uint32(pointer);
+            if (pointer ~= 0) then
+                database:Load(ashita.memory.read_uint32(pointer + offset2), ashita.memory.read_uint16(pointer + offset1));
+            end
+        end
+    end
 end
 
 return database;
