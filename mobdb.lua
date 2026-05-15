@@ -41,6 +41,11 @@ ashita.events.register('command', 'command_cb', function (e)
             gSettings.DetailView = not gSettings.DetailView;
             gSettings:Save(gSettings.CharacterSpecific);
             
+        elseif (string.lower(args[2]) == 'reset') then
+            gDetails.ResetPosition = true;
+            gBar.ResetPosition = true;
+            print(chat.header('MobDB') .. chat.message('Forced position reset.'));
+            
         elseif (string.lower(args[2]) == 'test') then
             local successCount = 0;
             local totalCount = 0;

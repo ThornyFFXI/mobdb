@@ -106,6 +106,10 @@ bar.Render = function(self)
     end
 
     if (self.State.IsOpen[1]) and (#renderTable > 0) then
+        if self.ResetPosition then
+            imgui.SetNextWindowPos( { 10, 10 } );
+            self.ResetPosition = nil;
+        end
         imgui.PushStyleVar(ImGuiStyleVar_ItemSpacing, { self.Layout.ItemSpacing, self.Layout.ItemSpacing });
         local pushColor = gSettings.Color;
         if pushColor then

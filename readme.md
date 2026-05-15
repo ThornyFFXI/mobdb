@@ -4,6 +4,9 @@ MobDB is an addon that displays monster information onscreen, in the same vein a
 ## /mobdb config ##
 You can type this command to edit the appearance of mobdb and change the tokens, either for a specific character or for all characters.  The 'Edit Tokens' button will allow you to change the display strings.
 
+## /md reset ##
+This will return the bar to the top left of the screen if it's dragged offscreen or lost due to resolution changes.
+
 ## To-Do ##
 1. Data parser already handles drop lists and spell lists, among other information.  A later version will include the ability to display a detailed window with far more information about the monster.  This would be larger onscreen, so it will be entirely optional and driven by a command to toggle it on/off.
 2. Manual revisions for Dynamis-D and Odyssey to increase usefulness for retail players.

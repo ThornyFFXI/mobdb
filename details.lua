@@ -56,13 +56,13 @@ local function GetSpeed(index)
             relative = speed / 5;
         end
 
-        if (relative < 0) then
+        if (relative < 1) then
             if (ashita.addons_version < 2.2) then
                 relative = string.format('-%.2d%%%%', math.floor((1 - relative) * 100));
             else
                 relative = string.format('-%.2d%%', math.floor((1 - relative) * 100));
             end
-        elseif (relative > 0) then
+        elseif (relative > 1) then
             if (ashita.addons_version < 2.2) then
                 relative = string.format('+%.2d%%%%', math.floor((relative - 1) * 100));
             else
@@ -233,6 +233,10 @@ function details:Render()
         end
     end
 
+    if self.ResetPosition then
+        imgui.SetNextWindowPos( { 10, 10 } );
+        self.ResetPosition = nil;
+    end
     imgui.PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0, 0 });
     if (imgui.Begin(string.format('%s v%s##MobDB Detail View', addon.name, addon.version), { true }, ImGuiWindowFlags_AlwaysAutoResize)) then
         imgui.PushFont(nil, 12 * gSettings.Scale);
